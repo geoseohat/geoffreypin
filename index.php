@@ -42,6 +42,12 @@ footer{margin-top:38px;color:var(--muted);font-size:13px}
       <p>Calculer une recette de saponification, la soude, le surgraissage et les proportions.</p>
       <div class="open">Ouvrir le calculateur →</div>
     </a>
+    <a class="card" href="labo-deo/">
+      <div class="icon">◉</div>
+      <h2>Labo Déo</h2>
+      <p>Créer, comparer, noter et archiver les formulations de déodorants.</p>
+      <div class="open">Ouvrir le Labo Déo →</div>
+    </a>
   </section>
   <footer>Portail d’applications · Mise à jour automatique par GitHub et SSH</footer>
 </main>
