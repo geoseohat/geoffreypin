@@ -323,6 +323,12 @@
     .saved-item .delete-recipe{width:48px}
   }
 
+
+  .result-save{margin:4px 0 16px;padding:11px;border:1px solid #718455;border-radius:11px;background:#43512f}
+  .result-save .btn{width:100%;background:#f3f5ec;color:var(--olive);border-color:#f3f5ec;font-weight:800}
+  .result-save .btn:hover{background:#fff}
+  .result-save-status{margin:7px 2px 0;color:#c9d5ac;font-size:11px;line-height:1.35;text-align:center}
+
 </style>
 </head>
 <body>
@@ -438,6 +444,7 @@
     <aside>
       <section class="card result-card">
         <h2><span class="num">✓</span> Recette calculée</h2>
+        <div class="result-save"><button class="btn" type="button" id="quickSaveRecipe">Enregistrer dans la bibliothèque</button><p class="result-save-status" id="quickSaveStatus">Nouvelle formulation non enregistrée</p></div>
         <div class="big">
           <div class="k" id="lyeName">Soude (NaOH) à peser</div>
           <span class="val" id="lyeOut">0</span><span class="unit">g</span>
@@ -543,6 +550,7 @@ let base = "naoh";
 let mode = "g";
 let rows = []; // {name, sv, src, range, amount, custom}
 let additives = []; // {name, amount}
+let currentRecipeId = null; // identifiant MySQL de la formulation chargée
 
 const $ = id => document.getElementById(id);
 const num = v => { const n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; };
@@ -1004,6 +1012,9 @@ $("addCustom").addEventListener("click",()=>{
   renderRows();compute();
 });
 $("loadDemo").addEventListener("click",()=>{
+  currentRecipeId=null;
+  if($("quickSaveStatus")) $("quickSaveStatus").textContent="Nouvelle formulation non enregistrée";
+  if($("quickSaveRecipe")) $("quickSaveRecipe").textContent="Enregistrer dans la bibliothèque";
   const pick=(name,amt)=>{const o=OILS.find(x=>x.n===name);return {name:o.n,sv:o.sv,src:o.src,range:o.range,url:o.url,amount:amt,custom:false};};
   if(mode==="pct"){
     rows=[pick("Huile d'olive",50),pick("Huile de coco (coprah)",25),pick("Huile de palme",20),pick("Huile de ricin",5)];
@@ -1101,7 +1112,8 @@ function currentRecipeState() {
     recipeName:$('recipeName').value||''
   };
 }
-function applyRecipeState(data,name) {
+function applyRecipeState(data,name,id) {
+  currentRecipeId=id||null;
   if(!data||!Array.isArray(data.rows)) return;
   base=data.base==='koh'?'koh':'naoh';
   mode=data.mode==='pct'?'pct':'g';
@@ -1122,6 +1134,8 @@ function applyRecipeState(data,name) {
   $('lyeHead').textContent=base==='naoh'?'NaOH (g)':'KOH (g)';
   $('amtHead').textContent=mode==='pct'?'Part (%)':'Poids (g)';
   renderRows();renderAdditives();compute();
+  $('quickSaveStatus').textContent=currentRecipeId?'Modification de « '+(name||'formulation')+' »':'Nouvelle formulation non enregistrée';
+  $('quickSaveRecipe').textContent=currentRecipeId?'Enregistrer les modifications':'Enregistrer dans la bibliothèque';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function renderSavedRecipes(recipes) {
@@ -1139,7 +1153,7 @@ function renderSavedRecipes(recipes) {
     meta.textContent=count+' huile'+(count>1?'s':'')+' · '+(recipe.data.base==='koh'?'KOH':'NaOH')+' · surgras '+(recipe.data.superfat||0)+' %';
     const actions=document.createElement('div'); actions.className='saved-item-actions';
     const load=document.createElement('button'); load.type='button'; load.className='btn primary'; load.textContent='Modifier dans la calculette';
-    load.addEventListener('click',()=>applyRecipeState(recipe.data,recipe.name));
+    load.addEventListener('click',()=>applyRecipeState(recipe.data,recipe.name,recipe.id));
     const del=document.createElement('button'); del.type='button'; del.className='btn ghost delete-recipe'; del.title='Supprimer'; del.setAttribute('aria-label','Supprimer '+recipe.name); del.textContent='✕';
     del.addEventListener('click',()=>{
       if(!window.confirm('Supprimer la recette « '+recipe.name+' » ?')) return;
@@ -1160,17 +1174,36 @@ function loadSavedRecipes() {
     $('savedRecipesStatus').textContent='Recettes non synchronisées : '+error.message;
   });
 }
-$('saveRecipe').addEventListener('click',()=>{
+function saveCurrentRecipe() {
   const name=$('savedRecipeName').value.trim()||$('recipeName').value.trim();
-  if(!name){ $('savedRecipeName').focus(); $('savedRecipesStatus').textContent='Donne un nom à la recette avant de l’enregistrer.'; return; }
+  if(!name){
+    $('savedRecipesStatus').textContent='Donne un nom à la formulation avant de l’enregistrer.';
+    $('savedRecipesCard').scrollIntoView({behavior:'smooth',block:'start'});
+    setTimeout(()=>$('savedRecipeName').focus(),350);
+    return Promise.resolve();
+  }
   $('savedRecipeName').value=name; $('recipeName').value=name; compute();
-  $('saveRecipe').disabled=true; $('savedRecipesStatus').textContent='Enregistrement…';
-  ensureRecipeAuth().then(()=>recipeApi('save',{name,data:JSON.stringify(currentRecipeState())})).then(result=>{
+  $('saveRecipe').disabled=true; $('quickSaveRecipe').disabled=true;
+  $('savedRecipesStatus').textContent='Enregistrement…';
+  $('quickSaveStatus').textContent='Enregistrement…';
+  const payload={name,data:JSON.stringify(currentRecipeState())};
+  if(currentRecipeId) payload.id=String(currentRecipeId);
+  return ensureRecipeAuth().then(()=>recipeApi('save',payload)).then(result=>{
     if(!result.ok) throw new Error(result.error||'Enregistrement impossible');
+    currentRecipeId=result.id;
+    $('savedRecipesStatus').textContent='Formulation enregistrée.';
+    $('quickSaveStatus').textContent='Enregistré dans la bibliothèque';
+    $('quickSaveRecipe').textContent='Enregistrer les modifications';
     return loadSavedRecipes();
-  }).catch(error=>$('savedRecipesStatus').textContent=error.message)
-    .finally(()=>$('saveRecipe').disabled=false);
-});
+  }).catch(error=>{
+    $('savedRecipesStatus').textContent=error.message;
+    $('quickSaveStatus').textContent='Échec : '+error.message;
+  }).finally(()=>{
+    $('saveRecipe').disabled=false; $('quickSaveRecipe').disabled=false;
+  });
+}
+$('saveRecipe').addEventListener('click',saveCurrentRecipe);
+$('quickSaveRecipe').addEventListener('click',saveCurrentRecipe);
 
 // démarrage
 renderAdditives();
