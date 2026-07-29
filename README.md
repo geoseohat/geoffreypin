@@ -8,6 +8,7 @@ Portail PHP/HTML déployé dans `/home/dxin1098/public_html/mailer`.
 - `mailer.php` : interface du Mailer
 - `api.php`, `oauth.php`, `install.php` : services du Mailer
 - `calculateur/index.html` : calculateur de saponification
+- `labo-deo/index.html` : laboratoire de formulation de déodorants avec 42 prototypes initiaux
 
 ## Configuration sensible
 
