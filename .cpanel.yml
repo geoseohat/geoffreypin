@@ -2,7 +2,7 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/dxin1098/public_html/mailer
-    - /bin/mkdir -p "$DEPLOYPATH/calculateur"
+    - /bin/mkdir -p "$DEPLOYPATH/calculateur" "$DEPLOYPATH/labo-deo"
     - /bin/cp -f index.php "$DEPLOYPATH/index.php"
     - /bin/cp -f mailer.php "$DEPLOYPATH/mailer.php"
     - /bin/cp -f api.php "$DEPLOYPATH/api.php"
@@ -10,3 +10,4 @@ deployment:
     - /bin/cp -f oauth.php "$DEPLOYPATH/oauth.php"
     - /bin/cp -f .htaccess "$DEPLOYPATH/.htaccess"
     - /bin/cp -f calculateur/index.html "$DEPLOYPATH/calculateur/index.html"
+    - /bin/cp -f labo-deo/index.html "$DEPLOYPATH/labo-deo/index.html"
