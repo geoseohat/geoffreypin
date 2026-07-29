@@ -46,7 +46,7 @@ curl_close($ch);
 $data = json_decode($resp, true);
 if (!empty($err) || empty($data['access_token'])) {
     echo "<h2>Erreur de connexion Google</h2><pre>".htmlspecialchars($resp ?: $err)."</pre>";
-    echo '<p><a href="index.php">Retour</a></p>';
+    echo '<p><a href="mailer.php">Retour</a></p>';
     exit;
 }
 
@@ -91,6 +91,6 @@ if (!$exists->fetchColumn()) {
     $pdo->prepare("UPDATE expediteurs SET connecte=1 WHERE email=?")->execute([$email]);
 }
 
-header('Location: index.php?gmail=connecte');
+header('Location: mailer.php?gmail=connecte');
 exit;
 
