@@ -1,20 +1,18 @@
-# Outil mailing
+# Portail d’applications Geoffrey Pin
 
-Application PHP déployée par cPanel dans `/home/dxjnl098/public_html/mailer`.
+Portail PHP/HTML déployé dans `/home/dxin1098/public_html/mailer`.
 
-## Configuration
+## Applications
 
-Le véritable fichier `config.php` contient les identifiants de base de données et les paramètres OAuth Gmail. Il est volontairement exclu de Git.
+- `index.php` : accueil du portail
+- `mailer.php` : interface du Mailer
+- `api.php`, `oauth.php`, `install.php` : services du Mailer
+- `calculateur/index.html` : calculateur de saponification
 
-1. Copier `config.example.php` en `config.php` directement sur cPanel.
-2. Renseigner les paramètres réels dans `config.php`.
-3. Ne jamais ajouter `config.php` au dépôt.
+## Configuration sensible
 
-## Déploiement cPanel
+Le véritable fichier `config.php` reste uniquement sur cPanel. Il contient les paramètres de base de données et OAuth Gmail et ne doit jamais être ajouté au dépôt.
 
-Dans **Git Version Control → Gérer** :
+## Déploiement
 
-1. **Update from Remote**
-2. **Deploy HEAD Commit**
-
-Le déploiement remplace uniquement les fichiers applicatifs listés dans `.cpanel.yml`. Il ne supprime pas le `config.php` déjà présent sur le serveur.
+Le déploiement normal est effectué par SSH après mise à jour de GitHub. Le fichier `.cpanel.yml` reste disponible comme solution de repli.
