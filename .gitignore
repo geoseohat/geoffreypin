@@ -1,0 +1,20 @@
+# Configuration et secrets locaux
+config.php
+.env
+.env.*
+token.json
+credentials.json
+*.token
+*.key
+
+# Données générées
+logs/
+uploads/
+sauvegardes/
+*.log
+
+# Système et éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
