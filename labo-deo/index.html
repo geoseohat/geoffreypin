@@ -1,0 +1,3008 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Labo Déo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0C1510;--surface:#131E18;--card:#192120;--border:#243028;
+      --accent:#C97245;--gold:#C8A85C;--text:#EBE5D8;--muted:#6E8078;--dim:#3A4A40;
+      --green:#5AAA6E;--red:#C05858;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+    body{padding-bottom:110px}
+    input,textarea,select{font-size:16px;color:var(--text);background:transparent;font-family:'DM Sans',sans-serif}
+    input::placeholder,textarea::placeholder{color:var(--dim)}
+    input:focus,textarea:focus,select:focus{outline:none}
+    button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s,transform .1s;border:none}
+    button:active{transform:scale(.93)}
+    select option{background:var(--surface);color:var(--text)}
+    input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+    ::-webkit-scrollbar{width:3px}
+    ::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+    @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes sh{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    .up{animation:up .22s ease forwards}
+
+    .hdr{padding:52px 20px 14px;background:linear-gradient(to bottom,var(--surface),var(--bg))}
+    .hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .hdr-title{font-family:'Playfair Display',serif;font-size:28px;letter-spacing:-.5px}
+    .hdr-sub{font-size:10px;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;margin-top:4px;margin-bottom:14px}
+    .hdr-actions{display:flex;gap:6px;flex-shrink:0;padding-top:4px}
+    .hact{width:38px;height:38px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--gold);font-size:15px;display:flex;align-items:center;justify-content:center}
+    .sync-pill{display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+    .sync-dot.warn{background:var(--gold)}
+    .sync-dot.err{background:var(--red)}
+    .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .tbtn{padding:6px 14px;border-radius:20px;font-size:11px;border:1px solid var(--border);background:transparent;color:var(--muted)}
+    .tbtn.on{background:var(--surface);color:var(--gold);border-color:var(--gold)}
+    .tbtn.cmp.on{background:rgba(201,114,69,.12);color:var(--accent);border-color:var(--accent)}
+
+    .groups{padding:10px 14px 0}
+    .group{margin-bottom:12px;border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+    .group-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);cursor:pointer;user-select:none}
+    .group-left{display:flex;align-items:center;gap:10px}
+    .group-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700}
+    .group-meta{font-size:11px;color:var(--muted);margin-top:1px}
+    .group-right{display:flex;align-items:center;gap:8px}
+    .gs{font-size:11px;color:var(--gold);opacity:.2}
+    .gs.on{opacity:1}
+    .group-chev{color:var(--dim);font-size:13px;transition:transform .22s}
+    .group-chev.open{transform:rotate(180deg)}
+    .group-body{background:var(--bg);display:none}
+    .group-body.open{display:block}
+
+    .proto-card{border-top:1px solid var(--border);background:var(--card)}
+    .proto-hdr{padding:12px 16px 12px 28px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+    .proto-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--gold);opacity:.6}
+    .proto-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .proto-meta{font-size:10px;color:var(--muted)}
+    .ps{font-size:11px;color:var(--gold);opacity:.2}
+    .ps.on{opacity:1}
+    .proto-body{border-top:1px solid var(--border);background:var(--bg)}
+    .csec{padding:14px 16px 14px 28px}
+    .slabel{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .frow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace}
+    .frow:last-child{border-bottom:none}
+    .ftotal{display:flex;justify-content:space-between;padding-top:6px;font-size:11px;color:var(--dim)}
+    .obs{font-size:13px;color:#AABCB4;line-height:1.75;font-style:italic;white-space:pre-wrap}
+    .divider{height:1px;background:var(--border);margin:0 16px}
+    .proto-actions{display:flex;border-top:1px solid var(--border)}
+    .pact{flex:1;padding:12px 8px;background:none;font-size:12px}
+
+    .cmp-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--dim);background:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;transition:all .15s}
+    .cmp-check.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+
+    .cmp-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 18px 20px;display:flex;align-items:center;gap:10px;z-index:50}
+    .cmp-bar-txt{flex:1;font-size:13px;color:var(--muted)}
+    .cmp-go{padding:11px 20px;background:linear-gradient(140deg,var(--accent),#9A5430);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:500}
+    .cmp-go:disabled{opacity:.4}
+    .cmp-reset{padding:11px 14px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px}
+
+    .cmp-view{padding-bottom:40px}
+    .cmp-hdr{padding:52px 18px 18px;background:linear-gradient(to bottom,var(--surface),var(--bg));display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)}
+    .cmp-title{font-family:'Playfair Display',serif;font-size:20px}
+    .cmp-subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+    .cmp-legend{margin:12px 14px 0;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+    .leg{display:flex;align-items:center;gap:4px}
+    .cmp-table{margin:12px 14px 0;border-radius:14px;overflow:hidden;border:1px solid var(--border);overflow-x:auto}
+    .cmp-inner{min-width:100%}
+    .cmp-thead{display:flex;background:var(--surface);border-bottom:2px solid var(--border)}
+    .cmp-th-ing{flex:0 0 110px;padding:10px 12px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .cmp-th-v{flex:1;min-width:90px;padding:10px 8px;font-size:11px;font-weight:600;color:var(--gold);text-align:center;border-left:1px solid var(--border)}
+    .cmp-row{display:flex;border-bottom:1px solid var(--border);background:var(--card)}
+    .cmp-row:last-child{border-bottom:none}
+    .cmp-row.has-diff{background:rgba(201,114,69,.05)}
+    .cmp-row.total-row{background:var(--surface)}
+    .cmp-ing{flex:0 0 110px;padding:9px 12px;font-size:12px;color:var(--text);display:flex;align-items:center}
+    .cmp-cell{flex:1;min-width:90px;padding:9px 8px;border-left:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:'IBM Plex Mono',monospace;font-size:12px}
+    .cmp-cell.absent{color:var(--dim)}
+    .cmp-cell.same{color:var(--gold)}
+    .cmp-cell.hi{color:var(--green);font-weight:700}
+    .cmp-cell.lo{color:var(--red);font-weight:700}
+    .arrow-badge{display:flex;align-items:center;gap:2px;font-size:10px;padding:1px 5px;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:600;margin-top:1px}
+    .arrow-badge.up{background:rgba(90,170,110,.15);color:var(--green)}
+    .arrow-badge.dn{background:rgba(192,88,88,.15);color:var(--red)}
+    .arrow-badge.eq{background:rgba(200,168,92,.1);color:var(--gold)}
+    .cmp-obs{margin:14px 14px 0;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+    .cmp-obs-hdr{background:var(--surface);padding:10px 14px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+    .cmp-obs-item{padding:13px 14px;border-bottom:1px solid var(--border);background:var(--card)}
+    .cmp-obs-item:last-child{border-bottom:none}
+    .cmp-obs-name{font-family:'Playfair Display',serif;font-size:13px;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+    .cmp-obs-txt{font-size:12px;color:#AABCB4;font-style:italic;line-height:1.65;white-space:pre-wrap}
+
+    .fab{position:fixed;bottom:24px;right:18px;width:58px;height:58px;border-radius:50%;background:linear-gradient(140deg,var(--accent),#9A5430);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(201,114,69,.5);z-index:10;border:none}
+    .fab-ai{position:fixed;bottom:92px;right:18px;width:52px;height:52px;border-radius:50%;background:linear-gradient(140deg,#4A8C5C,#2A5C3A);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(74,140,92,.5);z-index:10;border:none}
+
+    .fhdr{padding:52px 18px 18px;background:linear-gradient(to bottom,var(--surface),var(--bg));display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)}
+    .back{background:var(--surface);border:1px solid var(--border);color:var(--muted);width:38px;height:38px;border-radius:10px;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .ftitle{font-family:'Playfair Display',serif;font-size:21px}
+    .fbody{padding:22px 18px}
+    .field{margin-bottom:24px}
+    .fl{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .fi{width:100%;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:16px;color:var(--text)}
+    .fi:focus{border-color:var(--accent)}
+    .stars-pick{display:flex;gap:2px}
+    .sp{font-size:40px;line-height:1;background:none;border:none;color:var(--gold);opacity:.2;padding:6px 8px;border-radius:10px;transition:opacity .1s}
+    .sp.on{opacity:1}
+    .itbl{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .irow{display:grid;grid-template-columns:24px 1fr 68px 56px 28px;padding:9px 8px 9px 10px;align-items:center;gap:5px;border-bottom:1px solid var(--border)}
+    .ihd{display:grid;grid-template-columns:24px 1fr 68px 56px 28px;padding:7px 8px 7px 10px;border-bottom:1px solid var(--border)}
+    .imove{display:flex;flex-direction:column;gap:1px}
+    .imv-btn{background:none;border:none;color:var(--dim);font-size:11px;line-height:1;padding:1px;cursor:pointer;height:11px;display:flex;align-items:center;justify-content:center}
+    .imv-btn:hover{color:var(--accent)}
+    .imv-btn:disabled{opacity:.25;cursor:not-allowed}
+    .inom{background:none;border:none;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);width:100%}
+    .iqty{background:none;border:none;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);width:100%;text-align:right}
+    .isel{background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--muted);padding:4px 2px;width:100%;font-family:'DM Sans',sans-serif}
+    .idel{background:none;border:none;color:var(--dim);font-size:20px;line-height:1;width:100%;display:flex;align-items:center;justify-content:center}
+    .iadd{width:100%;padding:11px 14px;background:none;border:none;border-top:1px solid var(--border);color:var(--accent);font-size:12px;display:flex;align-items:center;gap:5px}
+    .ota{width:100%;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:14px;line-height:1.75;resize:vertical;color:#AABCB4;font-style:italic;min-height:100px}
+    .ota:focus{border-color:var(--accent)}
+    .aibox{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+    .aibox textarea{width:100%;padding:12px 14px;background:none;border:none;font-size:14px;line-height:1.7;resize:none;color:var(--text);min-height:90px;display:block}
+    .aibox textarea:focus{outline:none}
+    .aibox-foot{display:flex;justify-content:flex-end;padding:8px 10px;border-top:1px solid var(--border)}
+    .aibox-btn{padding:8px 16px;background:linear-gradient(140deg,#4A8C5C,#2A5C3A);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:500}
+    .aibox-btn:disabled{opacity:.5}
+    .savebtn{width:100%;padding:15px;background:linear-gradient(140deg,var(--accent),#9A5430);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:500;margin-top:4px}
+
+    .voverlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:flex;align-items:flex-end}
+    .vsheet{width:100%;background:var(--card);border-radius:24px 24px 0 0;padding:28px 22px 40px;border-top:1px solid var(--border);animation:sh .3s cubic-bezier(.32,.72,0,1);max-height:92vh;overflow-y:auto}
+    .vtitle{font-family:'Playfair Display',serif;font-size:20px;text-align:center;margin-bottom:4px}
+    .vsub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:18px;line-height:1.6}
+    .vtxa{width:100%;padding:13px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:14px;line-height:1.7;resize:none;color:var(--text);min-height:120px;margin-bottom:14px}
+    .vtxa:focus{border-color:var(--accent);outline:none}
+    .vai{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 0}
+    .vai-spin{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+    .vai-txt{font-size:13px;color:var(--muted);text-align:center}
+    .vbtns{display:flex;gap:10px}
+    .vcancel{flex:1;padding:13px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:13px}
+    .vok{flex:2;padding:13px;background:linear-gradient(140deg,#4A8C5C,#2A5C3A);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:500}
+
+    .exp-tabs{display:flex;gap:6px;margin-bottom:14px}
+    .exp-tab{flex:1;padding:9px;border-radius:9px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px}
+    .exp-tab.on{background:var(--surface);color:var(--gold);border-color:var(--gold)}
+    .exp-ta{width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.55;color:#AABCB4;height:200px;resize:vertical;margin-bottom:12px;white-space:pre}
+    .exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+    .exp-btn{padding:12px 8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px}
+    .exp-btn.primary{background:linear-gradient(140deg,var(--accent),#9A5430);border:none;color:#fff}
+    .exp-note{font-size:11px;color:var(--muted);line-height:1.6;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:12px}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;background:var(--surface);border:1px solid var(--gold);color:var(--gold);padding:11px 20px;border-radius:24px;font-size:13px;z-index:400;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+
+    .empty{text-align:center;padding:80px 24px}
+    .eicon{font-size:42px;margin-bottom:16px;opacity:.3}
+    .etitle{font-family:'Playfair Display',serif;font-size:18px;color:var(--dim);margin-bottom:8px}
+    .esub{font-size:13px;color:var(--muted);line-height:1.7}
+    .boot{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80vh;gap:14px}
+  </style>
+</head>
+<body>
+<div id="app"><div class="boot"><div class="vai-spin"></div><div class="vai-txt">Chargement des formulations…</div></div></div>
+<script>
+var uid = function() { return Math.random().toString(36).slice(2,9); };
+var blankI = function() { return {id:uid(),nom:'',quantite:'',unite:'g'}; };
+var blankP = function(n) { return {id:uid(),_new:true,nom:'Proto '+n,date:new Date().toLocaleDateString('fr-FR'),ingredients:[blankI(),blankI(),blankI()],commentaires:'',etoiles:0}; };
+var UNITES = ['g','%','mL','mg','gttes'];
+
+var ALL_SEEDS = [
+  {
+    "id": "s_v1test",
+    "nom": "V1.test",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "o1",
+        "nom": "HT",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "o2",
+        "nom": "Coco ca",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "o3",
+        "nom": "Stéaryl",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "o4",
+        "nom": "Cire abeille",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "o5",
+        "nom": "HM",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "o6",
+        "nom": "TC",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "o7",
+        "nom": "AM",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "o8",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Stick dure, glisse mais crème un peu collante. La sensation collante reste imprégnée."
+  },
+  {
+    "id": "4bc58vb",
+    "nom": "V3",
+    "date": "10/05/2026",
+    "ingredients": [
+      {
+        "id": "g1vet33",
+        "nom": "Huile de tournesol",
+        "quantite": "17",
+        "unite": "g"
+      },
+      {
+        "id": "ko0m3ub",
+        "nom": "Cire d'abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "tbbiq8u",
+        "nom": "Kaolin",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "f74aa0a",
+        "nom": "Amidon de maïs",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "niof6i8",
+        "nom": "Amidon de riz",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "yw9jv6t",
+        "nom": "Hydroxyde de magnésium",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Bonne glisse mais très collant et rugueux.",
+    "etoiles": 1
+  },
+  {
+    "id": "jca5pv7",
+    "nom": "V4",
+    "date": "10/05/2026",
+    "ingredients": [
+      {
+        "id": "wxn67gl",
+        "nom": "Huile de tournesol",
+        "quantite": "15",
+        "unite": "g"
+      },
+      {
+        "id": "3e5f6zx",
+        "nom": "Cire de tournesol",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "s3ecpgn",
+        "nom": "Cire de candélilla",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "50dhccc",
+        "nom": "Kaolin",
+        "quantite": "12",
+        "unite": "g"
+      },
+      {
+        "id": "5gkpj69",
+        "nom": "Hydroxyde de magnésium",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Dur. Pas assez bonne glisse. Trop pâteux, trop collant.",
+    "etoiles": 2
+  },
+  {
+    "id": "s_v5bis",
+    "nom": "V5 bis",
+    "date": "10/05/2026",
+    "etoiles": 4,
+    "ingredients": [
+      {
+        "id": "a1",
+        "nom": "HT",
+        "quantite": "15",
+        "unite": "g"
+      },
+      {
+        "id": "a2",
+        "nom": "DC",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "a3",
+        "nom": "Cire abeille",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "a4",
+        "nom": "Kaolin",
+        "quantite": "11",
+        "unite": "g"
+      },
+      {
+        "id": "a5",
+        "nom": "HM",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Un peu gras, moins collant. Satisfaisant mais film légèrement gras.\nObjectif : retirer le côté collant de la V5."
+  },
+  {
+    "id": "s_v5_3",
+    "nom": "V5.3",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "b1",
+        "nom": "HT",
+        "quantite": "12",
+        "unite": "g"
+      },
+      {
+        "id": "b2",
+        "nom": "DC",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "b3",
+        "nom": "Cire abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "b4",
+        "nom": "Kaolin",
+        "quantite": "11",
+        "unite": "g"
+      },
+      {
+        "id": "b5",
+        "nom": "HM",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "b6",
+        "nom": "Amidon de maïs",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "gras moins collant presque liquide sensation baume collant léger mais trop aspect creme et cassant en plus\n"
+  },
+  {
+    "id": "s_v5_4",
+    "nom": "V5.4",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "c1",
+        "nom": "HT",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "c2",
+        "nom": "DC",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "c3",
+        "nom": "Cire abeille",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "c4",
+        "nom": "Kaolin",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "c5",
+        "nom": "HM",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "c6",
+        "nom": "Amidon de maïs",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Sec et gras, assez dure.\nObjectif : retirer le gras."
+  },
+  {
+    "id": "9no7gah",
+    "nom": "V8",
+    "date": "10/05/2026",
+    "ingredients": [
+      {
+        "id": "47t5ep2",
+        "nom": "Huile de tournesol",
+        "quantite": "18",
+        "unite": "g"
+      },
+      {
+        "id": "vagxfpj",
+        "nom": "Cire d'abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "06exbsa",
+        "nom": "Kaolin",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "4wxc0n8",
+        "nom": "Amidon de maïs",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "avf34ch",
+        "nom": "Hydroxyde de magnésium",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "4d3df3w",
+        "nom": "Fleur de coton",
+        "quantite": "3",
+        "unite": "gttes"
+      }
+    ],
+    "commentaires": "Très bonne glisse. Légèrement collant et légèrement pâteux. Le collant est le principal défaut à corriger.",
+    "etoiles": 4
+  },
+  {
+    "id": "s_v8bis",
+    "nom": "V8 bis",
+    "date": "10/05/2026",
+    "etoiles": 1,
+    "ingredients": [
+      {
+        "id": "d1",
+        "nom": "HT",
+        "quantite": "14",
+        "unite": "g"
+      },
+      {
+        "id": "d2",
+        "nom": "Caprylic",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "d3",
+        "nom": "Cire abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "d4",
+        "nom": "Kaolin",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "d5",
+        "nom": "Amidon de riz",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "d6",
+        "nom": "HM",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Collant et un peu gras. Amidon de riz peut-être pas bon.\nObjectif : retirer le côté gras et améliorer la glisse."
+  },
+  {
+    "id": "ibonh3h",
+    "nom": "V12",
+    "date": "10/05/2026",
+    "ingredients": [
+      {
+        "id": "8lhr6xz",
+        "nom": "Huile de tournesol",
+        "quantite": "18",
+        "unite": "g"
+      },
+      {
+        "id": "9c53n33",
+        "nom": "Cire d'abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v81wmqc",
+        "nom": "Kaolin",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "n8gapez",
+        "nom": "Hydroxyde de magnésium",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "nwsq9d0",
+        "nom": "Zinc ricinoléate",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Fonctionne bien. Texture un peu collante et un peu grasse mais très bonne glisse ",
+    "etoiles": 4
+  },
+  {
+    "id": "s_v16_1",
+    "nom": "V16.1",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "e1",
+        "nom": "HT",
+        "quantite": "14",
+        "unite": "g"
+      },
+      {
+        "id": "e2",
+        "nom": "DC",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "e3",
+        "nom": "Cire abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "e4",
+        "nom": "Stéaryl A",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "e5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "e6",
+        "nom": "AM",
+        "quantite": "11",
+        "unite": "g"
+      },
+      {
+        "id": "e7",
+        "nom": "Kaolin",
+        "quantite": "3",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Crémeux, peu structurant, pas assez dur."
+  },
+  {
+    "id": "s_v16_2",
+    "nom": "V16.2",
+    "date": "10/05/2026",
+    "etoiles": 1,
+    "ingredients": [
+      {
+        "id": "f1",
+        "nom": "HT",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "f2",
+        "nom": "DC",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "f3",
+        "nom": "Cire abeille",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "f4",
+        "nom": "Stéaryl A",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "f5",
+        "nom": "HM",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "f6",
+        "nom": "AM",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "f7",
+        "nom": "Kaolin",
+        "quantite": "4",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Sec et pateux.\nObjectif : rendre dur comme un stick."
+  },
+  {
+    "id": "s_v16_3",
+    "nom": "V16.3",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "v163_1",
+        "nom": "HT",
+        "quantite": "12",
+        "unite": "g"
+      },
+      {
+        "id": "v163_2",
+        "nom": "DC",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v163_3",
+        "nom": "Cire abeille",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v163_4",
+        "nom": "Stéaryl A",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "v163_5",
+        "nom": "HM",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v163_6",
+        "nom": "AM",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "v163_7",
+        "nom": "Kaolin",
+        "quantite": "3",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Dur mais sec et peu glissant.\nObjectif : trouver un équilibre."
+  },
+  {
+    "id": "s_v16_4",
+    "nom": "V16.4",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "v164_1",
+        "nom": "HT",
+        "quantite": "12",
+        "unite": "g"
+      },
+      {
+        "id": "v164_2",
+        "nom": "Caprylis",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "v164_3",
+        "nom": "DC",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "v164_4",
+        "nom": "Cire abeille",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v164_5",
+        "nom": "Stéaryl abeille",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "v164_6",
+        "nom": "HM",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v164_7",
+        "nom": "AM",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "v164_8",
+        "nom": "Kaolin",
+        "quantite": "3",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Glisse mais sèche et limite saupoudreux. Malgré ça le stick tient, la glisse est meilleure.\nIl faut améliorer la glisse, la rendre plus légère. Pas assez fondant."
+  },
+  {
+    "id": "s_v16_5",
+    "nom": "V16.5",
+    "date": "10/05/2026",
+    "etoiles": 4,
+    "ingredients": [
+      {
+        "id": "v165_1",
+        "nom": "HT",
+        "quantite": "12",
+        "unite": "g"
+      },
+      {
+        "id": "v165_2",
+        "nom": "DC",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "v165_3",
+        "nom": "Cire abeille",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v165_4",
+        "nom": "Stéaryl A",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v165_5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "v165_6",
+        "nom": "AM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "v165_7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "bonne glisse soyeuse mais reste un peu sur le doigt ou l'aisselle. Il manque du velour et plus de fermeté. légèrement collant sous le bras"
+  },
+  {
+    "id": "s_v16_6",
+    "nom": "V16.6",
+    "date": "10/05/2026",
+    "etoiles": 4,
+    "ingredients": [
+      {
+        "id": "v166_1",
+        "nom": "HT",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "v166_2",
+        "nom": "DC",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "v166_3",
+        "nom": "Coco caprylate",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "v166_4",
+        "nom": "Cire abeille",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "v166_5",
+        "nom": "Stéaryl A",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v166_6",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "v166_7",
+        "nom": "AM",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v166_8",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Dur mais glisse. La glisse est légèrement sèche. Il faudrait une glisse plus veloutée qui n'accroche pas, avec un zest de fraîcheur.\nObjectif : plus velouté/léger."
+  },
+  {
+    "id": "s_v16_7",
+    "nom": "V16.7",
+    "date": "10/05/2026",
+    "etoiles": 3,
+    "ingredients": [
+      {
+        "id": "v167_1",
+        "nom": "HT",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "v167_2",
+        "nom": "Coco caprylate",
+        "quantite": "14",
+        "unite": "g"
+      },
+      {
+        "id": "v167_3",
+        "nom": "Cire abeille",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v167_4",
+        "nom": "Stéaryl a",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "v167_5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "v167_6",
+        "nom": "AM",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v167_7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "v167_8",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Glisse mais un peu gras, presque crémeux.\nIl faut baisser HT et augmenter le coco silicone."
+  },
+  {
+    "id": "s_v16_8",
+    "nom": "V16.8",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "g1",
+        "nom": "HT",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "g2",
+        "nom": "Coco capry",
+        "quantite": "13",
+        "unite": "g"
+      },
+      {
+        "id": "g3",
+        "nom": "Cire abeille",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "g4",
+        "nom": "Stéaryl A",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "g5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "g6",
+        "nom": "AM",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "g7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "g8",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "g9",
+        "nom": "Zinc",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Crémeux, trop mou, manque de solidité. Pas collant, bonne glisse mais trop crémeux."
+  },
+  {
+    "id": "s_v16_9",
+    "nom": "V16.9",
+    "date": "10/05/2026",
+    "etoiles": 1,
+    "ingredients": [
+      {
+        "id": "h1",
+        "nom": "HT",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "h2",
+        "nom": "Coco capry",
+        "quantite": "14",
+        "unite": "g"
+      },
+      {
+        "id": "h3",
+        "nom": "Cire abeille",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "h4",
+        "nom": "Stéaryl alcool",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "h5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "h6",
+        "nom": "AM",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "h7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "h8",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "h9",
+        "nom": "Zinc ricinoleate",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Crémeux, jeune et cassant. Trop huileux, pas assez de structure."
+  },
+  {
+    "id": "s_v16_10",
+    "nom": "V16.10",
+    "date": "10/05/2026",
+    "etoiles": 1,
+    "ingredients": [
+      {
+        "id": "i1",
+        "nom": "HT",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "i2",
+        "nom": "Coco",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "i3",
+        "nom": "Cire abeille",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "i4",
+        "nom": "Stéaryl A",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "i5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "i6",
+        "nom": "AM",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "i7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "i8",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "i9",
+        "nom": "Zinc",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Trop crémeux, le zinc casse la structure. Devient mou."
+  },
+  {
+    "id": "s_v16_11",
+    "nom": "V16.11",
+    "date": "10/05/2026",
+    "etoiles": 1,
+    "ingredients": [
+      {
+        "id": "j1",
+        "nom": "HT",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "j2",
+        "nom": "Coco ca",
+        "quantite": "12",
+        "unite": "g"
+      },
+      {
+        "id": "j3",
+        "nom": "Cire abeille",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "j4",
+        "nom": "Stéaryl",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "j5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "j6",
+        "nom": "AM",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "j7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "j8",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "glisse sèche et dure, stick dure qui tient mais mauvaise glisse et très collant"
+  },
+  {
+    "id": "s_v16_13",
+    "nom": "V16.13",
+    "date": "10/05/2026",
+    "etoiles": 3,
+    "ingredients": [
+      {
+        "id": "k1",
+        "nom": "HT",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "k2",
+        "nom": "Emogreen L19",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "k3",
+        "nom": "Cire tournesol SFW6",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "k4",
+        "nom": "Stéaryl alcool",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "k5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "k6",
+        "nom": "AM",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "k7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "k8",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Dur, glisse, ne colle pas. Sensation légère de gras. Bonne glisse mais sensation de non-pénétration sur la peau."
+  },
+  {
+    "id": "s_v16_14",
+    "nom": "V16.14",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "v1614_1",
+        "nom": "HT",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_2",
+        "nom": "Emogreen L19",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_3",
+        "nom": "Cire tournesol SFW6",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_4",
+        "nom": "Stéaryl alcool",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_5",
+        "nom": "HM",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_6",
+        "nom": "AM",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_7",
+        "nom": "Microcellullose",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_8",
+        "nom": "Kaolin",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "v1614_9",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Basée sur V16.13. Réduction EL19 (7→5g) pour enlever le côté gras. AM réduit (5→3g), microcellullose 2g en absorbant soyeux, Kaolin augmenté (2→3g).\n\nSec et glisse difficile. Stick dure. Assez poudreux et manque de de glisse. Bonne tenue néanmoins."
+  },
+  {
+    "id": "0ucyeme",
+    "nom": "V16.15",
+    "date": "10/05/2026",
+    "ingredients": [
+      {
+        "id": "wvsoyvs",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "pshv3ta",
+        "nom": "Emogreen L19",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "p7ey829",
+        "nom": "Cire tournesol ",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "umbdbdo",
+        "nom": "Stearyl alcohol",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "7cytjvz",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "ta0vtbm",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "gvdge5h",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "lfreoxd",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "w0y9g4v",
+        "nom": "",
+        "quantite": "",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "sec et poudreux, la glisse n'est pas bonne. Le stick a une bonne tenue il est dur et difficlement cassant. L'application est facile mais reste sur la peau il y a un léger film qu'il reste et ce n'est pas agréable sur la peau elle ne glisse pas bien.\n\nJe vais essayer de rajouter de emogreen L15 pour améliorer la glisse : +2 g. Je veux voir si la glisse sera meilleur et peut être moins pateux fini plus sec et glisse légère.",
+    "etoiles": 2
+  },
+  {
+    "id": "fa65q22",
+    "nom": "V16.16",
+    "date": "12/05/2026",
+    "ingredients": [
+      {
+        "id": "lfflc5z",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "jv98l10",
+        "nom": "Emogreen L19",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "daa2ern",
+        "nom": "Emogreen L15",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "jp9kly8",
+        "nom": "Cire tournesol",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v3k24jv",
+        "nom": "Stearyl alcohol",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "fk8mc6z",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "wgr9rda",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "kzvqbd5",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "prspe6x",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Bonne glisse, stick solide dure avec des traces blanches. Le fini/rendu est bon mais glisse encore insuffisante et si on appuie modéremment on peut casser le stick. Le côté poudreux est présent cela peut être intéressant mais une sensation de dépôt sur le doight reste. L'aspect crème poudre reste.\n\nPeut être que c'est la cire de tournesol qui donne ces traces blanches et cet aspect poudreux léger. Il faudrait retire la cire et analyser les résultats tout en gardant uniquement emogreen L15.",
+    "etoiles": 4
+  },
+  {
+    "id": "y90hsmh",
+    "nom": "V16.17",
+    "date": "12/05/2026",
+    "ingredients": [
+      {
+        "id": "kv3ik1o",
+        "nom": "Huile de tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "ineetyt",
+        "nom": "Emo Green L15",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "6rfvlem",
+        "nom": "Stéaryl alcohol",
+        "quantite": "14",
+        "unite": "g"
+      },
+      {
+        "id": "fu2c0xw",
+        "nom": "Hydroxyde de magnésium",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "lf8xvx9",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "wuvqb8r",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "ypokmk3",
+        "nom": "Triéthyle citrate",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "fonctionne pas du tout, dur crystallisé tout a jeter. pas de glisse sturcture cassante ",
+    "etoiles": 1
+  },
+  {
+    "id": "nzc2hn3",
+    "nom": "V16.18",
+    "date": "15/05/2026",
+    "ingredients": [
+      {
+        "id": "h3hko62",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "spgke37",
+        "nom": "Emogreen L15",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "g6kos9n",
+        "nom": "Cire abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "d16kdu4",
+        "nom": "Stearyl alcohol",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "37jufgq",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "dgdf7y5",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "5q0k471",
+        "nom": "triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "1yf36ij",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "bonne glisse mais toujours le côté collant avec un léger dépôt blanc",
+    "etoiles": 3
+  },
+  {
+    "id": "a77cz6w",
+    "nom": "V16.19",
+    "date": "16/05/2026",
+    "ingredients": [
+      {
+        "id": "200y5vv",
+        "nom": "Huile tournesol",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "f1jtvol",
+        "nom": "Emogreen L15",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "fib12vw",
+        "nom": "Cire abeille",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "nz19ucn",
+        "nom": "Stearyl alcohol",
+        "quantite": "11",
+        "unite": "g"
+      },
+      {
+        "id": "fqlhg93",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "0u21dtw",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "q0qntrg",
+        "nom": "triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "7dexnzr",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "repart sur un stick dur et sec manque de souplesse presque crystallisant. Aucune douceur lors de la glisse. Trop de stéaryl cela a rendu le stick dur et avec peu de souplesse. Je note des traces blanches. Peut être le stéaryl ?\nIl faudrait pour le prochain rebaisser le stearyl, ajouter de l'emogreen L19 pour rendre le stick glissant avec un léger film qui reste sans coller le doight. ",
+    "etoiles": 2
+  },
+  {
+    "id": "s_v16_20",
+    "nom": "V16.20",
+    "date": "17/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "v1620_1",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_2",
+        "nom": "Emogreen L19",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_3",
+        "nom": "Emogreen L15",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_4",
+        "nom": "Cire abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_5",
+        "nom": "Behenyl",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_6",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_7",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_8",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "v1620_9",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "dur bonne glisse, structurant et toucher non collant légèrement gras mais dépôt crémeux avec trace blanche sous les bras. Il faut enlever le côté gras, rendre une glisse plus liquide moins pateux mais plus orienté liquide léger. Emogreen est responsable ?"
+  },
+  {
+    "id": "vl7sunv",
+    "nom": "V16.21",
+    "date": "30/05/2026",
+    "ingredients": [
+      {
+        "id": "6ygi21v",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "ojxj526",
+        "nom": "Emogreen L19",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "aril075",
+        "nom": "Emogreen L15",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "sjgg5k1",
+        "nom": "Cire abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "a563xe7",
+        "nom": "Behenyl",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "6oygrfz",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "2z98o51",
+        "nom": "Amidon de maïs",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "l6pemra",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "dur bonne glisse, structurant et toucher non collant légèrement gras mais dépôt crémeux avec trace blanche sous les bras. Il faut enlever le côté gras, rendre une glisse plus liquide moins pateux mais plus orienté liquide léger. moins crémeux que la version précédent mais toujours crémeu et pateux. ",
+    "etoiles": 3
+  },
+  {
+    "id": "x2qs78v",
+    "nom": "V16.22",
+    "date": "31/05/2026",
+    "ingredients": [
+      {
+        "id": "y0tfoku",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "23tuan2",
+        "nom": "Squalane végétal olive",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "otqsuvj",
+        "nom": "Cire abeille",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "yuuyqdb",
+        "nom": "Behenyl",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "i818vva",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "t60m6j2",
+        "nom": "Amidon de maïs",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "3x0sp7b",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "encore une resistance et la glisse se fait difficilement. Dur mais mauvaise glisse.",
+    "etoiles": 2
+  },
+  {
+    "id": "el4s3tn",
+    "nom": "V16.23",
+    "date": "07/06/2026",
+    "ingredients": [
+      {
+        "id": "wzu5vsb",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "3aae66y",
+        "nom": "Coco caprylate caprate",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "fukxa53",
+        "nom": "Cire abeille",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "sme08cp",
+        "nom": "Behenyl",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "id549lh",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "cwwjn45",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "vb5t7mm",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "zxeuq05",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "encore une resistance et la glisse se fait difficilement mais bien meilleur que la version précédente. Dur mais mauvaise glisse. pour le prochain on tente de rajoute du coco caprylate. Un léger dépôt collant sur le doigt (sensation). reste le côté collant pateux encore imprimé.",
+    "etoiles": 3
+  },
+  {
+    "id": "5asup26",
+    "nom": "V16.24",
+    "date": "07/06/2026",
+    "ingredients": [
+      {
+        "id": "falo6ag",
+        "nom": "Huile tournesol",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "8176qty",
+        "nom": "Coco caprylate caprate",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "fkv83v2",
+        "nom": "Cire abeille",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "k2uc3qc",
+        "nom": "Behenyl",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "y1y15qk",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "37ysjmp",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "g19iv3g",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "gjr5ta2",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Bonne glisse mais manque d'application et reste collant. Pas pateux.",
+    "etoiles": 3
+  },
+  {
+    "id": "ihgj8f9",
+    "nom": "V16.25",
+    "date": "07/07/2026",
+    "ingredients": [
+      {
+        "id": "s1x50mf",
+        "nom": "Huile tournesol",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "sq4rixk",
+        "nom": "Emogreen L19",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "17hz99e",
+        "nom": "Emogreen L15",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "woxshqd",
+        "nom": "Cire abeille",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "22zr7v6",
+        "nom": "Behenyl",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "03kih4w",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "uzry6gq",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "9vr13i8",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "g4jvted",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "dur bonne glisses collante cela resulte de la cire d'abeille qui apport cette dureté mais aussi avec lui le côté légèrement collant qui reste sur la peau. Remplacer la cire d'abeille par cire de colza avec haut point de fusion.",
+    "etoiles": 4
+  },
+  {
+    "id": "n3fab1y",
+    "nom": "V16.26",
+    "date": "07/07/2026",
+    "ingredients": [
+      {
+        "id": "7wi86ye",
+        "nom": "Huile tournesol",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "3k7owqa",
+        "nom": "Coco caprylate caprate",
+        "quantite": "10",
+        "unite": "g"
+      },
+      {
+        "id": "prgc1wb",
+        "nom": "Cire colza",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "ni2aw7o",
+        "nom": "Behenyl",
+        "quantite": "9",
+        "unite": "g"
+      },
+      {
+        "id": "hl4syx5",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "d887zxa",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "sfmmtqe",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "73tqwa2",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "dur et bonne glisse laisse des traces blanches possiblement dû à la cire de colza qui a un point de fusion à 50° ce qui est peut. La glisse est très bonne légèrement grasse mais un peu trop abondante. Il faut baisser le behenyl pour le rendre plus facilement applicable sur la peau et baisser le coco caprylate.",
+    "etoiles": 3
+  },
+  {
+    "id": "nl6bb6g",
+    "nom": "V16.27",
+    "date": "10/07/2026",
+    "ingredients": [
+      {
+        "id": "jrnzwox",
+        "nom": "Huile tournesol",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "r6jvzz6",
+        "nom": "Coco caprylate caprate",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "akv5szk",
+        "nom": "Cire colza",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "ysaqx1a",
+        "nom": "Behenyl",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "0kpo7y4",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "anotstu",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "69lqwe1",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "8abxyzy",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "encore un peu gras mais glisse satisfaisante légèrement grasse mais glisse abondante. Le cote dur enlève l'application sur la peau. ",
+    "etoiles": 3
+  },
+  {
+    "id": "y957fz7",
+    "nom": "V16.28",
+    "date": "11/07/2026",
+    "ingredients": [
+      {
+        "id": "wiqm9qu",
+        "nom": "Huile tournesol",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "0lymjg6",
+        "nom": "Coco caprylate caprate",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "1cp0ln3",
+        "nom": "Cire colza",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "5sewvfp",
+        "nom": "Behenyl",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "1lppcgt",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "zb7fh6l",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "myxp0jw",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "55jbpij",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "un peu dur mais bonne glisse très légèrement collante lorsqu'on l'applique longuement. ",
+    "etoiles": 3
+  },
+  {
+    "id": "pxx8mrl",
+    "nom": "V16.29",
+    "date": "13/07/2026",
+    "ingredients": [
+      {
+        "id": "s3ynlfa",
+        "nom": "Huile tournesol",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "jqccevs",
+        "nom": "Coco caprylate caprate",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "od1zrfc",
+        "nom": "Cire colza",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "km8tre8",
+        "nom": "Behenyl",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "ni7fj1g",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "2w4aroa",
+        "nom": "Amidon de maïs",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "f5xcste",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "904lu3x",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "gras et glisse abondante . L'amidon de mais rajoute un dépot blanc plus soyeux mais légèrement gras",
+    "etoiles": 2
+  },
+  {
+    "id": "t3hvy66",
+    "nom": "V16.30",
+    "date": "14/07/2026",
+    "ingredients": [
+      {
+        "id": "bjfetw1",
+        "nom": "Huile tournesol",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "j38hw33",
+        "nom": "Coco caprylate caprate",
+        "quantite": "6",
+        "unite": "g"
+      },
+      {
+        "id": "9x8cr35",
+        "nom": "Cire colza 60°",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "29daq1i",
+        "nom": "Behenyl",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "nmbc0u3",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "juebcyn",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "d3w4eva",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "c479xrl",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "stick mou et rien a en faire. a revoir. cire de colza a changer toute la donne ca a changé la structure",
+    "etoiles": 1
+  },
+  {
+    "id": "6rt7g0a",
+    "nom": "V16.31",
+    "date": "21/07/2026",
+    "ingredients": [
+      {
+        "id": "9g55knn",
+        "nom": "Huile tournesol",
+        "quantite": "7",
+        "unite": "g"
+      },
+      {
+        "id": "9vuzonz",
+        "nom": "Coco caprylate caprate",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "58ibyi1",
+        "nom": "Cire colza",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "fqrtnli",
+        "nom": "Behenyl",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "8vbmfog",
+        "nom": "Hydroxide de magnésium",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "vdchv52",
+        "nom": "Amidon de maïs",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "irq0614",
+        "nom": "Triéthyl citrate",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "amjvud8",
+        "nom": "Kaolin",
+        "quantite": "1",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "inutilisable. stick mou et flasque cassant rien à en tirer. Cela doit etre le triethyl citrate qui casse la structure.",
+    "etoiles": 1
+  },
+  {
+    "id": "s_v17_1",
+    "nom": "V17.1",
+    "date": "10/05/2026",
+    "etoiles": 1,
+    "ingredients": [
+      {
+        "id": "l1",
+        "nom": "HT",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "l2",
+        "nom": "EL19",
+        "quantite": "11",
+        "unite": "g"
+      },
+      {
+        "id": "l3",
+        "nom": "Cire abeille",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "l4",
+        "nom": "Cire tournesol",
+        "quantite": "11",
+        "unite": "g"
+      },
+      {
+        "id": "l5",
+        "nom": "HM",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "l6",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "l7",
+        "nom": "Kaolin",
+        "quantite": "2",
+        "unite": "g"
+      },
+      {
+        "id": "l8",
+        "nom": "AM",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "l9",
+        "nom": "Microcellullose",
+        "quantite": "3",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Trop mou malgré plusieurs ajustements.\nRemarque : baisser L19 au lieu d'augmenter les cires ?"
+  },
+  {
+    "id": "s_v17_2",
+    "nom": "V17.2",
+    "date": "10/05/2026",
+    "etoiles": 1,
+    "ingredients": [
+      {
+        "id": "m1",
+        "nom": "HT",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "m2",
+        "nom": "EL19",
+        "quantite": "5",
+        "unite": "g"
+      },
+      {
+        "id": "m3",
+        "nom": "Cire abeille",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "m4",
+        "nom": "Cire tournesol",
+        "quantite": "13",
+        "unite": "g"
+      },
+      {
+        "id": "m5",
+        "nom": "HM",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "m6",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "m8",
+        "nom": "Microcellullose",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "m9",
+        "nom": "AM",
+        "quantite": "4",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Trop mou et cassant. La structure n'est pas assez dure pour tenir lorsqu'on pousse vers le bas."
+  },
+  {
+    "id": "s_v17_3",
+    "nom": "V17.3",
+    "date": "10/05/2026",
+    "etoiles": 2,
+    "ingredients": [
+      {
+        "id": "n1",
+        "nom": "HT",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "n2",
+        "nom": "EL19",
+        "quantite": "4",
+        "unite": "g"
+      },
+      {
+        "id": "n3",
+        "nom": "Cire abeille",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "n4",
+        "nom": "Cire tournesol",
+        "quantite": "15",
+        "unite": "g"
+      },
+      {
+        "id": "n5",
+        "nom": "HM",
+        "quantite": "8",
+        "unite": "g"
+      },
+      {
+        "id": "n6",
+        "nom": "TC",
+        "quantite": "1",
+        "unite": "g"
+      },
+      {
+        "id": "n7",
+        "nom": "Micro",
+        "quantite": "3",
+        "unite": "g"
+      },
+      {
+        "id": "n8",
+        "nom": "AM",
+        "quantite": "4",
+        "unite": "g"
+      }
+    ],
+    "commentaires": "Même constat, plus dur mais incapable de rester structurant. Ça casse et est mou. Poudreux, baineux et trop mou."
+  }
+];
+
+/* ═══════════ STORE : cloud (window.storage) + localStorage de secours ═══════════ */
+var CLOUD_KEY = 'labo_deo_data_v1';
+var LS_KEY = 'deo_user_v7';
+var _userData = {}, _deletedIds = [];
+var syncState = 'local'; // 'cloud' | 'local' | 'error'
+
+function readLocal() {
+  try { var r = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); return {edited:r.edited||{}, deleted:r.deleted||[]}; }
+  catch(e) { return {edited:{}, deleted:[]}; }
+}
+function writeLocal() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify({edited:_userData, deleted:_deletedIds})); } catch(e) {}
+}
+function writeCloud() {
+  if(!window.storage) return Promise.resolve();
+  return window.storage.set(CLOUD_KEY, JSON.stringify({edited:_userData, deleted:_deletedIds}), false)
+    .then(function(){ syncState='cloud'; }).catch(function(){ syncState='error'; });
+}
+
+function initStore() {
+  var local = readLocal();
+  var cloudPromise = Promise.resolve(null);
+  if(window.storage) {
+    cloudPromise = window.storage.get(CLOUD_KEY, false)
+      .then(function(r){ return r && r.value ? JSON.parse(r.value) : null; })
+      .catch(function(){ return null; });
+  }
+  return cloudPromise.then(function(cloud){
+    if(cloud) {
+      // Le cloud fait autorité, mais on récupère tout ce qui n'existe que localement
+      _userData = Object.assign({}, local.edited, cloud.edited||{});
+      var d = (cloud.deleted||[]).slice();
+      (local.deleted||[]).forEach(function(id){ if(d.indexOf(id)<0) d.push(id); });
+      _deletedIds = d;
+      syncState = 'cloud';
+    } else {
+      _userData = local.edited; _deletedIds = local.deleted;
+      syncState = window.storage ? 'cloud' : 'local';
+    }
+    writeLocal();
+    return writeCloud();
+  }).catch(function(){
+    var l = readLocal(); _userData = l.edited; _deletedIds = l.deleted; syncState='error';
+  });
+}
+
+var store = {
+  get: function() {
+    var fromSeeds = ALL_SEEDS.filter(function(s){ return _deletedIds.indexOf(s.id)<0; })
+      .map(function(s){ return _userData[s.id] ? Object.assign({},s,_userData[s.id]) : s; });
+    var userCreated = Object.keys(_userData).map(function(k){ return _userData[k]; })
+      .filter(function(p){ return p && p.id && !ALL_SEEDS.find(function(s){ return s.id===p.id; }); });
+    return userCreated.concat(fromSeeds);
+  },
+  save: function(data) {
+    var edited = {}, deleted = _deletedIds.slice();
+    data.forEach(function(p){ edited[p.id] = p; });
+    ALL_SEEDS.forEach(function(s){ if(!data.find(function(p){ return p.id===s.id; }) && deleted.indexOf(s.id)<0) deleted.push(s.id); });
+    _userData = edited; _deletedIds = deleted;
+    writeLocal(); writeCloud();
+  },
+  replaceAll: function(protos) {
+    _deletedIds = [];
+    store.save(protos);
+  }
+};
+
+/* ═══════════ Helpers ═══════════ */
+function getFamily(nom) { var m = nom.match(/^V?(\d+)/i); return m ? 'V'+m[1] : 'Autres'; }
+function groupProtos(protos) {
+  var map = {};
+  protos.forEach(function(p) { var f=getFamily(p.nom); if(!map[f]) map[f]=[]; map[f].push(p); });
+  Object.keys(map).forEach(function(k){ map[k].sort(function(a,b){ return a.nom.localeCompare(b.nom,undefined,{numeric:true}); }); });
+  return Object.keys(map).sort(function(a,b){ return a.localeCompare(b,undefined,{numeric:true}); }).map(function(k){ return {name:k,protos:map[k]}; });
+}
+function fi(p) { return (p.ingredients||[]).filter(function(i){ return i.nom && i.nom.trim(); }); }
+function tg(p) { return (p.ingredients||[]).filter(function(i){ return i.unite==='g'; }).reduce(function(s,i){ return s+(parseFloat(i.quantite)||0); },0); }
+function fmt(v) { return v===0?'':v%1===0?String(v):v.toFixed(1); }
+function starsHtml(n, cls, sz) { var out=''; for(var i=1;i<=5;i++) out+='<span class="'+cls+(i<=n?' on':'')+'" style="font-size:'+sz+'px">★</span>'; return out; }
+function bestStars(protos) { return Math.max.apply(null,[0].concat(protos.map(function(p){ return p.etoiles||0; }))); }
+function normName(s) { return s.toLowerCase().trim(); }
+function esc(s) { return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg) {
+  var old = document.getElementById('toast'); if(old) old.remove();
+  var t = document.createElement('div'); t.id='toast'; t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.remove(); }, 2600);
+}
+
+/* ═══════════ EXPORT / IMPORT ═══════════ */
+function exportJSON() {
+  var protos = store.get().slice().sort(function(a,b){ return a.nom.localeCompare(b.nom,undefined,{numeric:true}); });
+  return JSON.stringify({app:'Labo Déo', version:1, exportedAt:new Date().toISOString(), count:protos.length, protos:protos}, null, 2);
+}
+function exportTexte() {
+  var protos = store.get().slice().sort(function(a,b){ return a.nom.localeCompare(b.nom,undefined,{numeric:true}); });
+  var out = 'LABO DÉO — Export du '+new Date().toLocaleString('fr-FR')+'\n'+protos.length+' formulations\n';
+  out += '='.repeat(50)+'\n\n';
+  protos.forEach(function(p){
+    out += p.nom+'  ['+(p.etoiles||0)+'/5]  '+(p.date||'')+'\n';
+    out += '-'.repeat(40)+'\n';
+    fi(p).forEach(function(i){ out += '  '+i.nom+' : '+i.quantite+i.unite+'\n'; });
+    var t = tg(p); if(t>0) out += '  → Total : '+fmt(t)+'g\n';
+    if(p.commentaires) out += '\n  '+p.commentaires.replace(/\n/g,'\n  ')+'\n';
+    out += '\n';
+  });
+  return out;
+}
+function download(filename, content, mime) {
+  try {
+    var blob = new Blob([content], {type:mime||'text/plain;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+    toast('Fichier téléchargé');
+  } catch(e) { toast('Téléchargement impossible — copie le texte'); }
+}
+function copyText(txt) {
+  var ta = document.getElementById('exp-ta');
+  if(ta) { ta.focus(); ta.select(); ta.setSelectionRange(0, 999999); }
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(function(){ toast('Copié dans le presse-papier'); })
+      .catch(function(){ try{ document.execCommand('copy'); toast('Copié'); }catch(e){ toast('Sélectionne et copie manuellement'); } });
+  } else {
+    try { document.execCommand('copy'); toast('Copié'); } catch(e) { toast('Sélectionne et copie manuellement'); }
+  }
+}
+
+var expTab = 'json';
+function openExport() {
+  var old = document.getElementById('voverlay'); if(old) old.remove();
+  var ov = document.createElement('div'); ov.id='voverlay'; ov.className='voverlay';
+  ov.innerHTML = '<div class="vsheet" id="exp-sheet"></div>';
+  document.body.appendChild(ov);
+  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+  renderExport();
+}
+function renderExport() {
+  var sheet = document.getElementById('exp-sheet'); if(!sheet) return;
+  var n = store.get().length;
+  var content = expTab==='json' ? exportJSON() : exportTexte();
+  var stamp = new Date().toISOString().slice(0,10);
+  sheet.innerHTML =
+    '<div class="vtitle">⇪ Sauvegarde</div>'+
+    '<div class="vsub">'+n+' formulations · à conserver avant tout nettoyage de navigateur</div>'+
+    '<div class="exp-tabs">'+
+      '<button class="exp-tab'+(expTab==='json'?' on':'')+'" id="tab-json">JSON (restaurable)</button>'+
+      '<button class="exp-tab'+(expTab==='txt'?' on':'')+'" id="tab-txt">Texte (lisible)</button>'+
+    '</div>'+
+    '<textarea class="exp-ta" id="exp-ta" readonly>'+esc(content)+'</textarea>'+
+    '<div class="exp-grid">'+
+      '<button class="exp-btn primary" id="exp-copy">⧉ Copier</button>'+
+      '<button class="exp-btn primary" id="exp-dl">⇩ Télécharger</button>'+
+    '</div>'+
+    '<div class="exp-grid">'+
+      '<button class="exp-btn" id="exp-import">⇧ Importer</button>'+
+      '<button class="exp-btn" id="exp-close">Fermer</button>'+
+    '</div>'+
+    '<div class="exp-note">Le <strong style="color:var(--gold)">JSON</strong> permet de tout restaurer plus tard via « Importer ». Le <strong style="color:var(--gold)">Texte</strong> est une version lisible pour archiver ou partager.</div>';
+
+  document.getElementById('tab-json').onclick = function(){ expTab='json'; renderExport(); };
+  document.getElementById('tab-txt').onclick = function(){ expTab='txt'; renderExport(); };
+  document.getElementById('exp-copy').onclick = function(){ copyText(content); };
+  document.getElementById('exp-dl').onclick = function(){
+    if(expTab==='json') download('labo-deo-'+stamp+'.json', content, 'application/json');
+    else download('labo-deo-'+stamp+'.txt', content, 'text/plain;charset=utf-8');
+  };
+  document.getElementById('exp-import').onclick = openImport;
+  document.getElementById('exp-close').onclick = function(){ var o=document.getElementById('voverlay'); if(o) o.remove(); };
+}
+
+function openImport() {
+  var old = document.getElementById('voverlay'); if(old) old.remove();
+  var ov = document.createElement('div'); ov.id='voverlay'; ov.className='voverlay';
+  ov.innerHTML = '<div class="vsheet">'+
+    '<div class="vtitle">⇧ Importer</div>'+
+    '<div class="vsub">Colle un export JSON pour restaurer ou fusionner tes formulations</div>'+
+    '<textarea class="vtxa" id="imp-ta" placeholder=\'{"app":"Labo Déo", "protos":[…]}\'></textarea>'+
+    '<div class="exp-grid">'+
+      '<button class="exp-btn" id="imp-merge">Fusionner</button>'+
+      '<button class="exp-btn primary" id="imp-replace">Remplacer tout</button>'+
+    '</div>'+
+    '<button class="vcancel" style="width:100%;margin-top:4px" id="imp-cancel">Annuler</button>'+
+    '<div class="exp-note" style="margin-top:12px"><strong style="color:var(--gold)">Fusionner</strong> : ajoute ce qui manque, garde l\'existant.<br><strong style="color:var(--gold)">Remplacer tout</strong> : efface l\'état actuel et repart de l\'export.</div>'+
+  '</div>';
+  document.body.appendChild(ov);
+  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+  document.getElementById('imp-cancel').onclick = function(){ ov.remove(); };
+
+  function parseInput() {
+    var raw = document.getElementById('imp-ta').value.trim();
+    if(!raw) { toast('Colle d\'abord un export'); return null; }
+    try {
+      var d = JSON.parse(raw);
+      var protos = Array.isArray(d) ? d : (d.protos || (d.edited ? Object.keys(d.edited).map(function(k){ return d.edited[k]; }) : null));
+      if(!protos || !protos.length) { toast('Aucune formulation trouvée'); return null; }
+      return protos.map(function(p){
+        return {
+          id: p.id || uid(),
+          nom: p.nom || 'Sans nom',
+          date: p.date || new Date().toLocaleDateString('fr-FR'),
+          etoiles: Math.min(5, Math.max(0, parseInt(p.etoiles)||0)),
+          commentaires: p.commentaires || '',
+          ingredients: (p.ingredients||[]).map(function(i){ return {id:i.id||uid(), nom:i.nom||'', quantite:String(i.quantite==null?'':i.quantite), unite:i.unite||'g'}; })
+        };
+      });
+    } catch(e) { toast('JSON invalide'); return null; }
+  }
+
+  document.getElementById('imp-merge').onclick = function(){
+    var incoming = parseInput(); if(!incoming) return;
+    var current = store.get(); var byId = {}; var added = 0;
+    current.forEach(function(p){ byId[p.id]=p; });
+    incoming.forEach(function(p){ if(!byId[p.id]) { current = [p].concat(current); added++; } });
+    store.save(current);
+    ov.remove(); render(); toast(added+' formulation(s) ajoutée(s)');
+  };
+  document.getElementById('imp-replace').onclick = function(){
+    var incoming = parseInput(); if(!incoming) return;
+    store.replaceAll(incoming);
+    ov.remove(); render(); toast(incoming.length+' formulation(s) restaurée(s)');
+  };
+}
+
+/* ═══════════ Claude API ═══════════ */
+function callClaude(text, mode) {
+  var sysNew = 'Assistant labo déodorant. JSON uniquement sans backticks: {"nom":"string","ingredients":[{"nom":"string","quantite":"string","unite":"g ou % ou mL ou mg ou gttes"}],"commentaires":"string","etoiles":0}';
+  var sysObs = 'Assistant labo déodorant. JSON uniquement sans backticks: {"commentaires":"string","etoiles":0}';
+  return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:mode==='new'?sysNew:sysObs,messages:[{role:'user',content:text}]})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if(d.error) throw new Error(d.error.message); var raw=(d.content||[]).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('').replace(/```json\n?|```\n?/g,'').trim(); return JSON.parse(raw.match(/\{[\s\S]*\}/)[0]); });
+}
+
+function getAllIngredientNames() {
+  var names = {};
+  store.get().forEach(function(p){ fi(p).forEach(function(ing){ names[ing.nom.trim()] = true; }); });
+  return Object.keys(names).sort();
+}
+
+/* ═══════════ State ═══════════ */
+var S = { view:'list', editing:null, openProto:null, openGroups:{}, sortByStars:false, compareMode:false, selected:{} };
+ALL_SEEDS.forEach(function(s){ S.openGroups[getFamily(s.nom)] = true; });
+
+function duplicateProto(id) {
+  var src = store.get().find(function(x){ return x.id===id; });
+  if(!src) return;
+  S.editing = { id:uid(), _new:true, nom:src.nom+' (copie)', date:new Date().toLocaleDateString('fr-FR'),
+    ingredients:src.ingredients.map(function(i){ return {id:uid(),nom:i.nom,quantite:i.quantite,unite:i.unite}; }),
+    commentaires:src.commentaires||'', etoiles:0 };
+  S.view='form'; render();
+}
+function moveIngredient(id, dir) {
+  captureForm();
+  var idx = S.editing.ingredients.findIndex(function(i){ return i.id===id; });
+  if(idx < 0) return;
+  var newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= S.editing.ingredients.length) return;
+  var ings = S.editing.ingredients.slice();
+  var tmp = ings[idx]; ings[idx] = ings[newIdx]; ings[newIdx] = tmp;
+  S.editing.ingredients = ings; render();
+}
+function openAI() {
+  var existing = document.getElementById('voverlay'); if(existing) existing.remove();
+  var ov = document.createElement('div'); ov.id='voverlay'; ov.className='voverlay';
+  ov.innerHTML = '<div class="vsheet"><div class="vtitle">✦ Nouveau prototype</div><div class="vsub">Décris ta formulation en texte libre</div><textarea class="vtxa" id="vtxa" placeholder="Ex: V16.32 — 8g HT, 5g EL19…"></textarea><div class="vbtns"><button class="vcancel" id="vcancel">Annuler</button><button class="vok" id="vok">✦ Analyser</button></div></div>';
+  document.body.appendChild(ov);
+  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+  document.getElementById('vcancel').onclick = function(){ ov.remove(); };
+  document.getElementById('vtxa').focus();
+  document.getElementById('vok').onclick = function() {
+    var text = document.getElementById('vtxa').value.trim();
+    if(!text){ toast('Écris quelque chose'); return; }
+    ov.querySelector('.vsheet').innerHTML = '<div class="vai"><div class="vai-spin"></div><div class="vai-txt">Claude analyse…</div></div>';
+    callClaude(text,'new').then(function(res){
+      var p = {id:uid(),_new:true,nom:res.nom||'Nouveau proto',date:new Date().toLocaleDateString('fr-FR'),
+        ingredients:(res.ingredients||[]).map(function(i){ return {id:uid(),nom:i.nom||'',quantite:String(i.quantite||''),unite:i.unite||'g'}; }),
+        commentaires:res.commentaires||'',etoiles:Math.min(5,Math.max(0,parseInt(res.etoiles)||0))};
+      if(!p.ingredients.length) p.ingredients=[blankI()];
+      ov.remove(); S.editing=p; S.view='form'; render();
+    }).catch(function(err){
+      ov.querySelector('.vsheet').innerHTML = '<div style="padding:28px;text-align:center"><div style="font-size:28px;margin-bottom:12px">⚠️</div><div style="color:#C05858;font-size:13px;margin-bottom:18px">'+esc(err.message)+'</div><button class="vcancel" style="width:100%" id="verr">Fermer</button></div>';
+      document.getElementById('verr').onclick = function(){ ov.remove(); };
+    });
+  };
+}
+function captureForm() {
+  if(!S.editing) return;
+  var nom=document.getElementById('f-nom'); if(nom) S.editing.nom=nom.value;
+  var obs=document.getElementById('f-obs'); if(obs) S.editing.commentaires=obs.value;
+  document.querySelectorAll('.inom').forEach(function(el){ var i=S.editing.ingredients.find(function(x){ return x.id===el.dataset.id; }); if(i) i.nom=el.value; });
+  document.querySelectorAll('.iqty').forEach(function(el){ var i=S.editing.ingredients.find(function(x){ return x.id===el.dataset.id; }); if(i) i.quantite=el.value; });
+  document.querySelectorAll('.isel').forEach(function(el){ var i=S.editing.ingredients.find(function(x){ return x.id===el.dataset.id; }); if(i) i.unite=el.value; });
+}
+function saveProto() {
+  captureForm(); if(!S.editing) return;
+  var p = Object.assign({},S.editing); delete p._new;
+  var protos = store.get();
+  var updated = S.editing._new ? [p].concat(protos) : protos.map(function(x){ return x.id===p.id?p:x; });
+  store.save(updated); S.openProto=p.id; S.view='list'; S.editing=null; render();
+}
+function delProto(id) {
+  var existing = document.getElementById('voverlay'); if(existing) existing.remove();
+  var p = store.get().find(function(x){ return x.id===id; });
+  var ov = document.createElement('div'); ov.id='voverlay'; ov.className='voverlay';
+  ov.innerHTML = '<div class="vsheet" style="padding:28px 22px 36px"><div class="vtitle" style="font-size:18px;margin-bottom:10px">🗑 Supprimer ?</div><div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.6">Supprimer <strong style="color:var(--text)">'+esc(p?p.nom:'cette fiche')+'</strong> ?<br>Action irréversible.</div><div class="vbtns"><button class="vcancel" id="del-no">Annuler</button><button id="del-yes" style="flex:2;padding:13px;background:linear-gradient(140deg,#C05858,#8A3030);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:500;cursor:pointer">Supprimer</button></div></div>';
+  document.body.appendChild(ov);
+  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+  document.getElementById('del-no').onclick = function(){ ov.remove(); };
+  document.getElementById('del-yes').onclick = function(){
+    store.save(store.get().filter(function(x){ return x.id!==id; }));
+    if(S.openProto===id) S.openProto=null;
+    delete S.selected[id];
+    ov.remove(); render();
+  };
+}
+
+/* ═══════════ Compare ═══════════ */
+function buildCompareView() {
+  var all = store.get();
+  var protos = Object.keys(S.selected).map(function(id){ return all.find(function(p){ return p.id===id; }); }).filter(Boolean);
+  protos.sort(function(a,b){ return a.nom.localeCompare(b.nom,undefined,{numeric:true}); });
+  if(protos.length < 2) return '<div class="empty"><div class="eicon">⚖️</div><div class="etitle">Sélectionne au moins 2 versions</div></div>';
+  var allNormNames = [], normToDisplay = {};
+  protos.forEach(function(p){ fi(p).forEach(function(ing){ var n=normName(ing.nom); if(!normToDisplay[n]){ normToDisplay[n]=ing.nom; allNormNames.push(n); } }); });
+  allNormNames.sort(function(a,b){
+    var ca=protos.filter(function(p){ return fi(p).find(function(i){ return normName(i.nom)===a; }); }).length;
+    var cb=protos.filter(function(p){ return fi(p).find(function(i){ return normName(i.nom)===b; }); }).length;
+    return cb-ca;
+  });
+  var thead = '<div class="cmp-thead"><div class="cmp-th-ing">Ingrédient</div>'+protos.map(function(p){ return '<div class="cmp-th-v">'+esc(p.nom)+'</div>'; }).join('')+'</div>';
+  var rows = allNormNames.map(function(nn){
+    var vals = protos.map(function(p){ var ing=fi(p).find(function(i){ return normName(i.nom)===nn; }); return ing?(parseFloat(ing.quantite)||0):null; });
+    var pv = vals.filter(function(v){ return v!==null; });
+    var hasDiff = pv.length>1 && !pv.every(function(v){ return v===pv[0]; });
+    var maxV=Math.max.apply(null,pv), minV=Math.min.apply(null,pv);
+    var cells = vals.map(function(v, idx){
+      if(v===null) return '<div class="cmp-cell absent">—</div>';
+      var cls='cmp-cell', badge='';
+      if(hasDiff){ if(v===maxV) cls+=' hi'; else if(v===minV) cls+=' lo'; else cls+=' same'; } else cls+=' same';
+      if(idx>0){ var prev=vals[idx-1];
+        if(prev!==null){ var d=v-prev; badge = d>0?'<div class="arrow-badge up">↑ +'+d+'g</div>':(d<0?'<div class="arrow-badge dn">↓ '+d+'g</div>':'<div class="arrow-badge eq">→ =</div>'); }
+        else badge='<div class="arrow-badge up">↑ nouveau</div>';
+      }
+      return '<div class="'+cls+'"><span>'+v+'g</span>'+badge+'</div>';
+    }).join('');
+    return '<div class="cmp-row'+(hasDiff?' has-diff':'')+'"><div class="cmp-ing">'+esc(normToDisplay[nn])+'</div>'+cells+'</div>';
+  }).join('');
+  var totCells = protos.map(function(p,idx){
+    var t=tg(p), badge='';
+    if(idx>0){ var d=t-tg(protos[idx-1]); badge = d>0?'<div class="arrow-badge up">↑ +'+fmt(d)+'g</div>':(d<0?'<div class="arrow-badge dn">↓ '+fmt(d)+'g</div>':'<div class="arrow-badge eq">→ =</div>'); }
+    return '<div class="cmp-cell same"><span>'+(t>0?fmt(t)+'g':'—')+'</span>'+badge+'</div>';
+  }).join('');
+  var totRow = '<div class="cmp-row total-row"><div class="cmp-ing" style="color:var(--muted);font-size:11px">Total (g)</div>'+totCells+'</div>';
+  var starsRows = protos.map(function(p){ return '<div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)"><span style="font-size:12px;color:var(--muted)">'+esc(p.nom)+'</span><div>'+starsHtml(p.etoiles||0,'ps',13)+'</div></div>'; }).join('');
+  var obsItems = protos.map(function(p){ return '<div class="cmp-obs-item"><div class="cmp-obs-name">'+starsHtml(p.etoiles||0,'ps',11)+' '+esc(p.nom)+'</div><div class="cmp-obs-txt">'+(p.commentaires?esc(p.commentaires):'<span style="color:var(--dim)">Aucune observation</span>')+'</div></div>'; }).join('');
+  return '<div class="cmp-view">'+
+    '<div class="cmp-hdr"><button class="back" id="back">←</button><div><div class="cmp-title">Comparaison</div><div class="cmp-subtitle">'+protos.map(function(p){ return esc(p.nom); }).join(' → ')+'</div></div></div>'+
+    '<div class="cmp-legend"><div class="leg"><span style="color:var(--green);font-weight:700">↑</span> augmentation</div><div class="leg"><span style="color:var(--red);font-weight:700">↓</span> diminution</div><div class="leg"><span style="color:var(--gold)">→</span> identique</div></div>'+
+    '<div class="cmp-table"><div class="cmp-inner">'+thead+rows+totRow+'</div></div>'+
+    '<div style="margin:14px 14px 0;border-radius:14px;overflow:hidden;border:1px solid var(--border)"><div style="background:var(--surface);padding:10px 14px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)">Notes</div>'+starsRows+'</div>'+
+    '<div class="cmp-obs"><div class="cmp-obs-hdr">Observations</div>'+obsItems+'</div>'+
+  '</div>';
+}
+
+/* ═══════════ Render ═══════════ */
+function render() {
+  var app = document.getElementById('app');
+  if(S.view==='compare') app.innerHTML = buildCompareView();
+  else if(S.view==='form') app.innerHTML = buildForm();
+  else app.innerHTML = buildList();
+  bind();
+}
+function buildList() {
+  var protos = store.get();
+  if(S.sortByStars) protos = protos.slice().sort(function(a,b){ return (b.etoiles||0)-(a.etoiles||0); });
+  var groups = groupProtos(protos);
+  var content = groups.length===0 ? '<div class="empty up"><div class="eicon">⚗️</div><div class="etitle">Aucun prototype</div></div>' : groups.map(buildGroup).join('');
+  var cmpBar = S.compareMode ? '<div class="cmp-bar"><div class="cmp-bar-txt">'+(Object.keys(S.selected).length===0?'Sélectionne des versions':'<strong>'+Object.keys(S.selected).length+'</strong> sélectionnée(s)')+'</div><button class="cmp-reset" id="cmp-reset">Annuler</button><button class="cmp-go" id="cmp-go" '+(Object.keys(S.selected).length<2?'disabled':'')+'>Comparer →</button></div>' : '';
+  var syncLabel = syncState==='cloud' ? 'Synchronisé · tous appareils' : (syncState==='error' ? 'Sauvegarde locale uniquement' : 'Local');
+  var syncCls = syncState==='cloud' ? '' : (syncState==='error' ? ' err' : ' warn');
+  return '<div>'+
+    '<div class="hdr">'+
+      '<div class="hdr-top"><div><div class="hdr-title">Labo Déo</div><div class="hdr-sub">Journal de formulation</div></div>'+
+      '<div class="hdr-actions"><button class="hact" id="btn-export" title="Sauvegarde">⇪</button></div></div>'+
+      '<div class="sync-pill"><span class="sync-dot'+syncCls+'"></span>'+syncLabel+' · '+protos.length+' fiches</div>'+
+      '<div class="toolbar">'+
+        '<button class="tbtn'+(S.sortByStars?' on':'')+'" id="sort-stars">★ Note</button>'+
+        '<button class="tbtn'+(!S.sortByStars?' on':'')+'" id="sort-date">↓ Famille</button>'+
+        '<button class="tbtn cmp'+(S.compareMode?' on':'')+'" id="toggle-cmp">⚖️ Comparer</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="groups">'+content+'</div>'+
+    (!S.compareMode?'<button class="fab" id="fab">+</button><button class="fab-ai" id="fab-ai">✦</button>':'')+
+    cmpBar+
+  '</div>';
+}
+function buildGroup(g) {
+  var isOpen = !!S.openGroups[g.name];
+  return '<div class="group up">'+
+    '<div class="group-hdr" data-grp="'+esc(g.name)+'"><div class="group-left"><div style="font-size:18px">🧪</div><div><div class="group-name">'+esc(g.name)+'</div><div class="group-meta">'+g.protos.length+' version'+(g.protos.length>1?'s':'')+'</div></div></div>'+
+    '<div class="group-right"><div>'+starsHtml(bestStars(g.protos),'gs',12)+'</div><div class="group-chev'+(isOpen?' open':'')+'">▾</div></div></div>'+
+    '<div class="group-body'+(isOpen?' open':'')+'">'+g.protos.map(buildProtoCard).join('')+'</div></div>';
+}
+function buildProtoCard(p) {
+  var isOpen = S.openProto===p.id, isSel = !!S.selected[p.id];
+  var ings=fi(p), total=tg(p);
+  var meta=[p.date,total>0?fmt(total)+'g':''].filter(Boolean).join(' · ');
+  var cmpBox = S.compareMode ? '<div class="cmp-check'+(isSel?' sel':'')+'" data-cmp="'+p.id+'">'+(isSel?'✓':'')+'</div>' : '';
+  var body = '';
+  if(isOpen && !S.compareMode){
+    var rows=ings.map(function(g){ return '<div class="frow"><span style="font-size:12px">'+esc(g.nom)+'</span><span style="font-size:12px;color:var(--gold);font-weight:500">'+esc(g.quantite)+esc(g.unite)+'</span></div>'; }).join('');
+    var tot=total>0?'<div class="ftotal"><span>Total</span><span>'+fmt(total)+'g</span></div>':'';
+    var formul=ings.length?'<div class="csec"><div class="slabel">Formulation</div>'+rows+tot+'</div>':'';
+    var obs=p.commentaires?'<div class="divider"></div><div class="csec"><div class="slabel">Observations</div><div class="obs">'+esc(p.commentaires)+'</div></div>':'';
+    body='<div class="proto-body up">'+formul+obs+'<div class="proto-actions"><button class="pact" style="color:var(--muted);border-right:1px solid var(--border)" data-edit="'+p.id+'">✏️ Modifier</button><button class="pact" style="color:var(--accent);border-right:1px solid var(--border)" data-dup="'+p.id+'">⎘ Dupliquer</button><button class="pact" style="color:rgba(192,88,88,.8)" data-del="'+p.id+'">🗑</button></div></div>';
+  }
+  return '<div class="proto-card" style="'+(isSel?'background:rgba(201,114,69,.07)':'')+'">'+
+    '<div class="proto-hdr" data-proto="'+p.id+'">'+cmpBox+'<div class="proto-dot"></div>'+
+    '<div style="flex:1;min-width:0"><div class="proto-name">'+esc(p.nom)+'</div><div class="proto-meta">'+esc(meta)+'</div></div>'+
+    '<div style="display:flex;gap:1px">'+starsHtml(p.etoiles||0,'ps',12)+'</div>'+
+    '<div style="margin-left:6px;color:var(--dim);font-size:10px;transform:'+(isOpen&&!S.compareMode?'rotate(180deg)':'none')+'">▾</div>'+
+    '</div>'+body+'</div>';
+}
+function buildForm() {
+  var f = S.editing;
+  var starPicker = '';
+  for(var i=1;i<=5;i++) starPicker+='<button class="sp'+(i<=(f.etoiles||0)?' on':'')+'" data-s="'+i+'" type="button">★</button>';
+  var datalist = '<datalist id="ing-list">'+getAllIngredientNames().map(function(n){ return '<option value="'+esc(n)+'">'; }).join('')+'</datalist>';
+  var irows = f.ingredients.map(function(g,idx){
+    var opts=UNITES.map(function(u){ return '<option'+(u===g.unite?' selected':'')+'>'+u+'</option>'; }).join('');
+    return '<div class="irow">'+
+      '<div class="imove"><button class="imv-btn" data-mv-up="'+g.id+'" type="button" '+(idx===0?'disabled':'')+'>▲</button><button class="imv-btn" data-mv-dn="'+g.id+'" type="button" '+(idx===f.ingredients.length-1?'disabled':'')+'>▼</button></div>'+
+      '<input class="inom" type="text" value="'+esc(g.nom)+'" placeholder="Ingrédient '+(idx+1)+'" list="ing-list" data-id="'+g.id+'">'+
+      '<input class="iqty" type="number" value="'+esc(g.quantite)+'" placeholder="0" data-id="'+g.id+'">'+
+      '<select class="isel" data-id="'+g.id+'">'+opts+'</select>'+
+      '<button class="idel" data-did="'+g.id+'" type="button">×</button></div>';
+  }).join('');
+  return '<div style="min-height:100vh;padding-bottom:40px">'+datalist+
+    '<div class="fhdr"><button class="back" id="back" type="button">←</button><div class="ftitle">'+(f._new?'Nouveau prototype':'Modifier')+'</div></div>'+
+    '<div class="fbody">'+
+      '<div class="field"><label class="fl">Nom / Version</label><input class="fi" id="f-nom" type="text" value="'+esc(f.nom)+'" placeholder="V16.32…"></div>'+
+      '<div class="field"><label class="fl">Note</label><div class="stars-pick">'+starPicker+'</div></div>'+
+      '<div class="field"><label class="fl">Formulation</label><div class="itbl"><div class="ihd"><span></span><span style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase">Ingrédient</span><span style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;text-align:right">Qté</span><span style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase">Unité</span><span></span></div>'+irows+'<button class="iadd" id="iadd" type="button"><span style="font-size:16px">+</span> Ajouter</button></div></div>'+
+      '<div class="field"><label class="fl">Observations</label><textarea class="ota" id="f-obs" rows="4" placeholder="Texture, odeur, tenue…">'+esc(f.commentaires||'')+'</textarea></div>'+
+      '<div class="field"><label class="fl">Décrire avec Claude</label><div class="aibox"><textarea id="ai-tx" placeholder="Décris librement, Claude complète…" rows="3"></textarea><div class="aibox-foot"><button class="aibox-btn" id="ai-btn" type="button">✦ Analyser</button></div></div></div>'+
+      '<button class="savebtn" id="savebtn" type="button">Enregistrer</button>'+
+    '</div></div>';
+}
+
+/* ═══════════ Bind ═══════════ */
+function bind() {
+  var backBtn = document.getElementById('back');
+  if(backBtn) backBtn.onclick = function(){ S.view='list'; S.editing=null; render(); };
+  if(S.view==='compare') return;
+
+  if(S.view==='form') {
+    document.querySelectorAll('.sp').forEach(function(btn){
+      btn.onclick = function(){
+        var n=parseInt(btn.dataset.s);
+        S.editing.etoiles = S.editing.etoiles===n?0:n;
+        document.querySelectorAll('.sp').forEach(function(b,i){ b.classList.toggle('on',i<S.editing.etoiles); });
+      };
+    });
+    document.querySelectorAll('[data-did]').forEach(function(btn){ btn.onclick=function(){ captureForm(); if(S.editing.ingredients.length>1) S.editing.ingredients=S.editing.ingredients.filter(function(i){ return i.id!==btn.dataset.did; }); render(); }; });
+    document.querySelectorAll('[data-mv-up]').forEach(function(btn){ btn.onclick=function(){ moveIngredient(btn.dataset.mvUp, -1); }; });
+    document.querySelectorAll('[data-mv-dn]').forEach(function(btn){ btn.onclick=function(){ moveIngredient(btn.dataset.mvDn, 1); }; });
+    var iadd=document.getElementById('iadd'); if(iadd) iadd.onclick=function(){ captureForm(); S.editing.ingredients=S.editing.ingredients.concat([blankI()]); render(); };
+    var aibtn=document.getElementById('ai-btn');
+    if(aibtn) aibtn.onclick=function(){
+      var text=document.getElementById('ai-tx').value.trim(); if(!text){toast('Écris quelque chose');return;}
+      captureForm(); var cur=(S.editing.commentaires||'').trim(); S.editing.commentaires=cur?cur+'\n'+text:text;
+      aibtn.disabled=true; aibtn.textContent='…';
+      callClaude(S.editing.commentaires,'obs').then(function(res){
+        if(res.commentaires) S.editing.commentaires=res.commentaires;
+        if(res.etoiles!==undefined) S.editing.etoiles=Math.min(5,Math.max(0,parseInt(res.etoiles)||0));
+        render();
+      }).catch(function(err){ toast('Erreur : '+err.message); aibtn.disabled=false; aibtn.textContent='✦ Analyser'; });
+    };
+    var save=document.getElementById('savebtn'); if(save) save.onclick=saveProto;
+    return;
+  }
+
+  var ex=document.getElementById('btn-export'); if(ex) ex.onclick=openExport;
+  var fabBtn=document.getElementById('fab'); if(fabBtn) fabBtn.onclick=function(){ S.editing=blankP(store.get().length+1); S.view='form'; render(); };
+  var fabAi=document.getElementById('fab-ai'); if(fabAi) fabAi.onclick=openAI;
+  var ss=document.getElementById('sort-stars'); if(ss) ss.onclick=function(){ S.sortByStars=true; render(); };
+  var sd=document.getElementById('sort-date'); if(sd) sd.onclick=function(){ S.sortByStars=false; render(); };
+  var tc=document.getElementById('toggle-cmp'); if(tc) tc.onclick=function(){ S.compareMode=!S.compareMode; if(!S.compareMode) S.selected={}; render(); };
+  var cr=document.getElementById('cmp-reset'); if(cr) cr.onclick=function(){ S.compareMode=false; S.selected={}; render(); };
+  var cg=document.getElementById('cmp-go'); if(cg) cg.onclick=function(){ if(Object.keys(S.selected).length>=2){ S.view='compare'; render(); } };
+
+  document.querySelectorAll('[data-cmp]').forEach(function(el){ el.onclick=function(e){ e.stopPropagation(); var id=el.dataset.cmp; if(S.selected[id]) delete S.selected[id]; else S.selected[id]=true; render(); }; });
+  document.querySelectorAll('[data-grp]').forEach(function(el){ el.onclick=function(){ var g=el.dataset.grp; S.openGroups[g]=!S.openGroups[g]; render(); }; });
+  document.querySelectorAll('[data-proto]').forEach(function(el){
+    el.onclick=function(e){ e.stopPropagation();
+      if(S.compareMode){ var id=el.dataset.proto; if(S.selected[id]) delete S.selected[id]; else S.selected[id]=true; render(); return; }
+      S.openProto=S.openProto===el.dataset.proto?null:el.dataset.proto; render();
+    };
+  });
+  document.querySelectorAll('[data-edit]').forEach(function(el){
+    el.onclick=function(e){ e.stopPropagation(); var p=store.get().find(function(x){ return x.id===el.dataset.edit; }); S.editing=Object.assign({},p,{ingredients:p.ingredients.map(function(i){ return Object.assign({},i); })}); S.view='form'; render(); };
+  });
+  document.querySelectorAll('[data-dup]').forEach(function(el){ el.onclick=function(e){ e.stopPropagation(); duplicateProto(el.dataset.dup); }; });
+  document.querySelectorAll('[data-del]').forEach(function(el){ el.onclick=function(e){ e.stopPropagation(); delProto(el.dataset.del); }; });
+}
+
+/* ═══════════ Boot ═══════════ */
+initStore().then(function(){ render(); }).catch(function(){ render(); });
+</script>
+</body>
+</html>
+
