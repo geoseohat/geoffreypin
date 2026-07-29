@@ -2492,8 +2492,7 @@ var ALL_SEEDS = [
   }
 ];
 
-/* ═══════════ STORE : cloud (window.storage) + localStorage de secours ═══════════ */
-var CLOUD_KEY = 'labo_deo_data_v1';
+/* ═══════════ STORE : MySQL cPanel + localStorage de secours ═══════════ */
 var LS_KEY = 'deo_user_v7';
 var _userData = {}, _deletedIds = [];
 var syncState = 'local'; // 'cloud' | 'local' | 'error'
@@ -2505,37 +2504,62 @@ function readLocal() {
 function writeLocal() {
   try { localStorage.setItem(LS_KEY, JSON.stringify({edited:_userData, deleted:_deletedIds})); } catch(e) {}
 }
-function writeCloud() {
-  if(!window.storage) return Promise.resolve();
-  return window.storage.set(CLOUD_KEY, JSON.stringify({edited:_userData, deleted:_deletedIds}), false)
-    .then(function(){ syncState='cloud'; }).catch(function(){ syncState='error'; });
+function apiCall(action, payload) {
+  var body = new URLSearchParams();
+  Object.keys(payload||{}).forEach(function(key){ body.append(key, payload[key]); });
+  return fetch('api.php?action='+encodeURIComponent(action), {
+    method:'POST',
+    credentials:'same-origin',
+    headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+    body:body.toString()
+  }).then(function(response){
+    return response.json().catch(function(){ return {ok:false,error:'Réponse serveur invalide.'}; });
+  });
 }
-
+function ensureAuth() {
+  return apiCall('me').then(function(status){
+    if(status.auth) return true;
+    var password = window.prompt('Mot de passe du Mailer pour synchroniser le Labo Déo :');
+    if(!password) throw new Error('Connexion annulée');
+    return apiCall('login',{password:password}).then(function(result){
+      if(!result.ok) throw new Error(result.error||'Connexion impossible');
+      return true;
+    });
+  });
+}
+function writeCloud() {
+  writeLocal();
+  return apiCall('save',{data:JSON.stringify({edited:_userData,deleted:_deletedIds})})
+    .then(function(result){
+      if(!result.ok) throw new Error(result.error||'Sauvegarde impossible');
+      syncState='cloud';
+    })
+    .catch(function(error){ syncState='error'; throw error; });
+}
 function initStore() {
   var local = readLocal();
-  var cloudPromise = Promise.resolve(null);
-  if(window.storage) {
-    cloudPromise = window.storage.get(CLOUD_KEY, false)
-      .then(function(r){ return r && r.value ? JSON.parse(r.value) : null; })
-      .catch(function(){ return null; });
-  }
-  return cloudPromise.then(function(cloud){
-    if(cloud) {
-      // Le cloud fait autorité, mais on récupère tout ce qui n'existe que localement
-      _userData = Object.assign({}, local.edited, cloud.edited||{});
-      var d = (cloud.deleted||[]).slice();
-      (local.deleted||[]).forEach(function(id){ if(d.indexOf(id)<0) d.push(id); });
-      _deletedIds = d;
-      syncState = 'cloud';
-    } else {
-      _userData = local.edited; _deletedIds = local.deleted;
-      syncState = window.storage ? 'cloud' : 'local';
-    }
-    writeLocal();
-    return writeCloud();
-  }).catch(function(){
-    var l = readLocal(); _userData = l.edited; _deletedIds = l.deleted; syncState='error';
-  });
+  return ensureAuth()
+    .then(function(){ return apiCall('load'); })
+    .then(function(server){
+      if(!server.ok) throw new Error(server.error||'Chargement impossible');
+      var cloud = server.data;
+      if(cloud) {
+        _userData = Object.assign({}, local.edited, cloud.edited||{});
+        var deleted = (cloud.deleted||[]).slice();
+        (local.deleted||[]).forEach(function(id){ if(deleted.indexOf(id)<0) deleted.push(id); });
+        _deletedIds = deleted;
+      } else {
+        _userData = local.edited;
+        _deletedIds = local.deleted;
+      }
+      syncState='cloud';
+      writeLocal();
+      return writeCloud();
+    })
+    .catch(function(error){
+      _userData=local.edited; _deletedIds=local.deleted; syncState='error';
+      setTimeout(function(){ alert('Synchronisation serveur indisponible. Les modifications restent sauvegardées dans ce navigateur.\n\n'+error.message); },100);
+    });
 }
 
 var store = {
