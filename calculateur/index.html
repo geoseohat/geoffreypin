@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculateur de saponification Ã  froid</title>
+<style>
+  :root{
+    --bg:#eaece2;
+    --card:#fbfbf6;
+    --card-2:#f4f5ec;
+    --ink:#2a322a;
+    --ink-soft:#5c6455;
+    --sage:#7c8b64;
+    --olive:#4c5a3b;
+    --amber:#b5791d;
+    --amber-soft:#f0e2c4;
+    --danger:#a4432b;
+    --danger-soft:#f4dcd3;
+    --line:#d6d9c9;
+    --line-soft:#e6e8dc;
+    --radius:16px;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 80px}
+  header.top{margin-bottom:20px}
+  .eyebrow{
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--sage);font-weight:700;margin:0 0 6px
+  }
+  h1{font-size:clamp(26px,4vw,38px);margin:0 0 8px;font-weight:800;letter-spacing:-.02em}
+  .lede{color:var(--ink-soft);max-width:62ch;margin:0}
+
+  .safety{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--danger-soft);border:1px solid #e2b9ab;
+    border-radius:var(--radius);padding:14px 16px;margin:18px 0 24px;
+    font-size:14px;color:#6f2c1a
+  }
+  .safety b{color:var(--danger)}
+  .safety .mark{font-size:20px;line-height:1}
+
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);padding:20px
+  }
+  .card + .card{margin-top:20px}
+  .card h2{font-size:15px;margin:0 0 14px;font-weight:700;
+    letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+  .card h2 .num{
+    font:700 12px/1 var(--mono);color:var(--sage);
+    border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--card-2)
+  }
+
+  label.field{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+  .row{display:flex;flex-wrap:wrap;gap:16px}
+  .row > div{flex:1;min-width:140px}
+
+  input[type=number],input[type=text],select{
+    width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:9px 11px;outline:none
+  }
+  input:focus,select:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(124,139,100,.22)}
+
+  /* segmented control */
+  .seg{display:inline-flex;background:var(--card-2);border:1px solid var(--line);
+    border-radius:11px;padding:3px;gap:3px}
+  .seg button{
+    font:600 14px/1 var(--sans);color:var(--ink-soft);background:transparent;
+    border:0;border-radius:8px;padding:8px 14px;cursor:pointer
+  }
+  .seg button[aria-pressed=true]{background:var(--olive);color:#fff}
+
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:5px}
+
+  /* oils table */
+  table{width:100%;border-collapse:collapse;margin-top:4px}
+  thead th{
+    font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--ink-soft);text-align:left;font-weight:700;
+    padding:0 8px 8px;border-bottom:1px solid var(--line)
+  }
+  thead th.r{text-align:right}
+  tbody td{padding:8px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+  tbody td.r{text-align:right;font-family:var(--mono);font-size:13px}
+  .oil-name{font-weight:600;font-size:14px}
+  .oil-name input{border:1px dashed var(--line);background:transparent;padding:5px 7px;font-weight:600}
+  .sv-cell input{width:78px;text-align:right;font-family:var(--mono);padding:6px 8px}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;
+    padding:2px 6px;border-radius:5px;margin-top:4px}
+  .badge.codex{background:#e2ebd6;color:#41562c}
+  .badge.litt{background:var(--amber-soft);color:#8a5b12}
+  .ref-range{font:11px/1.3 var(--mono);color:var(--ink-soft);display:block;margin-top:3px}
+  .verify{display:inline-block;font-size:11px;font-weight:600;color:var(--olive);
+    text-decoration:none;margin-top:3px}
+  .verify:hover{text-decoration:underline}
+  .del{border:0;background:transparent;color:var(--danger);cursor:pointer;font-size:18px;
+    line-height:1;padding:4px 6px;border-radius:6px}
+  .del:hover{background:var(--danger-soft)}
+  .amt input{width:92px;text-align:right;font-family:var(--mono)}
+  .empty-row td{color:var(--ink-soft);font-style:italic;padding:18px 8px;text-align:center}
+
+  .add-bar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+  .add-bar select{flex:1;min-width:200px}
+  .btn{font:600 14px/1 var(--sans);border-radius:10px;padding:10px 15px;cursor:pointer;border:1px solid var(--line)}
+  .btn.primary{background:var(--sage);color:#fff;border-color:var(--sage)}
+  .btn.primary:hover{background:#6c7a55}
+  .btn.ghost{background:#fff;color:var(--ink)}
+  .btn.ghost:hover{background:var(--card-2)}
+
+  .totrow td{font-weight:700;border-top:2px solid var(--line);border-bottom:0;padding-top:12px}
+  .warn-pct{color:var(--danger);font-weight:700}
+
+  /* results */
+  aside{position:sticky;top:18px}
+  .result-card{background:var(--olive);color:#f3f5ec;border:0}
+  .result-card h2{color:#eef2e4}
+  .result-card h2 .num{color:#cdd8b6;border-color:#63754a;background:#43512f}
+  .big{margin:6px 0 2px}
+  .big .val{font:800 34px/1 var(--mono);color:#fff;letter-spacing:-.01em}
+  .big .unit{font-size:15px;color:#cfd9bd;margin-left:4px;font-weight:600}
+  .big .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#b8c69c;font-weight:700}
+  .result-card hr{border:0;border-top:1px solid #5f7146;margin:16px 0}
+  .kv{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:5px 0}
+  .kv .kk{color:#c9d5ac}
+  .kv .vv{font-family:var(--mono);font-weight:600}
+  .lye-word{background:#43512f;border-radius:8px;padding:2px 8px;font-family:var(--mono);font-size:12px}
+
+
+  .recipe-title{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#b8c69c;font-weight:800;margin:0 0 8px}
+  .recipe-list{display:grid;gap:6px;margin:0}
+  .recipe-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.11);font-size:13px}
+  .recipe-line:last-child{border-bottom:0}
+  .recipe-line .name{color:#eef2e4;min-width:0;overflow-wrap:anywhere}
+  .recipe-line .qty{font-family:var(--mono);font-weight:700;white-space:nowrap}
+  .recipe-line .calc-note{grid-column:1/-1;color:#c9d5ac;font:11px/1.35 var(--mono)}
+  .recipe-line.total-lye{margin-top:5px;padding-top:10px;border-top:1px solid #718455}
+  .recipe-line.total-lye .name,.recipe-line.total-lye .qty{font-weight:800;color:#fff}
+  .recipe-tag{display:inline-block;margin-left:6px;padding:1px 5px;border-radius:4px;background:#43512f;color:#c9d5ac;font:700 9px/1.5 var(--sans);text-transform:uppercase;letter-spacing:.04em}
+  .recipe-total{display:flex;justify-content:space-between;gap:12px;margin-top:10px;padding-top:10px;border-top:2px solid #718455;font-weight:800}
+  .additive-row{display:grid;grid-template-columns:minmax(150px,1fr) 120px auto;gap:10px;align-items:center;margin-top:10px}
+  .additive-row:first-child{margin-top:0}
+  @media(max-width:620px){.additive-row{grid-template-columns:1fr 100px auto}}
+
+  details{margin-top:8px}
+  details.calc{background:var(--card-2);border:1px solid var(--line);border-radius:var(--radius);padding:0}
+  details.calc summary{cursor:pointer;padding:14px 18px;font-weight:700;font-size:14px;list-style:none}
+  details.calc summary::-webkit-details-marker{display:none}
+  details.calc summary::before{content:"â–¸ ";color:var(--sage)}
+  details.calc[open] summary::before{content:"â–¾ "}
+  .calc-body{padding:0 18px 18px}
+  .formula{font-family:var(--mono);font-size:13px;background:#fff;border:1px solid var(--line-soft);
+    border-radius:10px;padding:12px 14px;margin:10px 0;color:var(--ink);white-space:pre-wrap}
+  .formula .c{color:var(--sage)}
+
+  /* dÃ©tail du calcul, pas Ã  pas */
+  .calc-intro{font-size:13.5px;color:var(--ink-soft);margin:14px 0 4px}
+  .step{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line-soft)}
+  .step:first-of-type{border-top:0}
+  .step .sn{flex:0 0 26px;height:26px;border-radius:50%;background:var(--olive);color:#fff;
+    font:700 13px/26px var(--mono);text-align:center}
+  .step .sc{flex:1;font-size:14px}
+  .step .sc .st-t{font-weight:700;margin-bottom:2px}
+  .step .sc .st-eq{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);margin:2px 0}
+  .step .sc .st-res{font-family:var(--mono);font-weight:700;color:var(--olive)}
+  .calc-table{width:100%;border-collapse:collapse;margin:8px 0 2px;font-size:13px}
+  .calc-table th,.calc-table td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--line-soft)}
+  .calc-table th{color:var(--ink-soft);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .calc-table td:first-child,.calc-table th:first-child{text-align:left}
+  .calc-table tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0;color:var(--olive)}
+
+  .note{font-size:13px;color:var(--ink-soft);background:var(--card-2);border-left:3px solid var(--sage);
+    padding:10px 14px;border-radius:0 10px 10px 0;margin-top:12px}
+  .tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px;align-items:start}
+  @media(max-width:900px){.tools-grid{grid-template-columns:1fr}}
+  .quick-pcts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+  .quick-pcts button{font:700 13px/1 var(--sans);padding:9px 12px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer}
+  .quick-pcts button:hover,.quick-pcts button.active{background:var(--olive);color:#fff;border-color:var(--olive)}
+  .test-head{display:flex;justify-content:space-between;gap:14px;align-items:end;flex-wrap:wrap}
+  .test-head .pct-box{width:180px}
+  .test-list{margin-top:14px;border-top:1px solid var(--line)}
+  .test-line{display:grid;grid-template-columns:minmax(145px,1fr) auto;gap:4px 14px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+  .test-line .tname{font-weight:700}.test-line .tqty{font:700 13px var(--mono);text-align:right}
+  .test-line .tcalc{grid-column:1/-1;font:12px/1.45 var(--mono);color:var(--ink-soft)}
+  .test-total{display:flex;justify-content:space-between;gap:14px;padding-top:14px;font-weight:800;font-size:17px}
+  .sheet-fields{display:grid;grid-template-columns:1fr 180px;gap:14px;margin-bottom:16px}
+  @media(max-width:620px){.sheet-fields{grid-template-columns:1fr}}
+  .sheet-box{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+  .sheet-title{font-weight:800;font-size:18px;margin:0 0 12px}.sheet-meta{font-size:13px;color:var(--ink-soft);margin-bottom:12px}
+  .check-line{display:grid;grid-template-columns:16px minmax(140px,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line-soft)}
+  .check-line:last-child{border-bottom:0}.check{font-size:18px;line-height:1}.check-line .q{font:700 13px var(--mono)}
+  .sheet-sub{margin:16px 0 6px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--sage);font-weight:800}
+  @media print{body *{visibility:hidden!important}#fabricationSheet,#fabricationSheet *{visibility:visible!important}#fabricationSheet{position:absolute;left:0;top:0;width:100%;border:0;padding:0;background:#fff}#fabricationSheet .no-print{display:none!important}.wrap{max-width:none;padding:0}.sheet-box{border:0;padding:0}}
+  footer{margin-top:30px;font-size:12.5px;color:var(--ink-soft);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">Atelier Â· saponification Ã  froid</p>
+    <h1>Calculateur de soude &amp; d'eau pour tes savons</h1>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT : inputs -->
+    <main>
+      <section class="card">
+        <h2><span class="num">1</span> RÃ©glages</h2>
+
+        <div class="row">
+          <div>
+            <label class="field">Type de soude</label>
+            <div class="seg" id="baseSeg" role="group" aria-label="Type de soude">
+              <button data-base="naoh" aria-pressed="true">NaOH Â· savon dur</button>
+              <button data-base="koh" aria-pressed="false">KOH Â· savon mou/liquide</button>
+            </div>
+            <p class="hint">NaOH = savon solide en barre. KOH (potasse) = savon liquide ou pÃ¢te.</p>
+          </div>
+          <div id="purityWrap" style="display:none">
+            <label class="field" for="purity">PuretÃ© de la potasse (%)</label>
+            <input type="number" id="purity" value="90" min="50" max="100" step="1">
+            <p class="hint">La KOH du commerce fait souvent 90 %.</p>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div>
+            <label class="field" for="superfat">Surgras / rÃ©duction de soude (%)</label>
+            <input type="number" id="superfat" value="7" min="0" max="30" step="0.5">
+            <p class="hint">Part d'huiles laissÃ©e non saponifiÃ©e. 5â€“8 % courant ; jusqu'Ã  15â€“20 % pour peaux sensibles / 100 % coco.</p>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div>
+            <label class="field" for="waterMethod">Calcul de l'eau</label>
+            <select id="waterMethod">
+              <option value="pct">% du poids des huiles</option>
+              <option value="conc">Concentration de la lessive de soude (%)</option>
+              <option value="ratio">Ratio eau : soude</option>
+            </select>
+          </div>
+          <div>
+            <label class="field" for="waterValue" id="waterLabel">Eau (% des huiles)</label>
+            <input type="number" id="waterValue" value="33" step="0.5">
+            <p class="hint" id="waterHint">Souvent 30â€“38 % du poids des huiles.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="num">2</span> Tes huiles &amp; beurres</h2>
+
+        <div class="seg" id="modeSeg" role="group" aria-label="Mode de saisie" style="margin-bottom:14px">
+          <button data-mode="g" aria-pressed="true">Saisie en grammes</button>
+          <button data-mode="pct" aria-pressed="false">Saisie en %</button>
+        </div>
+
+        <div id="totalOilsWrap" style="display:none;margin-bottom:14px">
+          <label class="field" for="totalOils">Poids total d'huiles souhaitÃ© (g)</label>
+          <input type="number" id="totalOils" value="1000" min="1" step="10" style="max-width:220px">
+          <p class="hint">En mode %, chaque huile est un pourcentage de ce total.</p>
+        </div>
+
+        <div style="overflow-x:auto">
+        <table id="oilTable">
+          <thead>
+            <tr>
+              <th style="min-width:150px">Huile / beurre</th>
+              <th class="r" id="amtHead">Poids (g)</th>
+              <th class="r" id="coefHead">Coeff. soude</th>
+              <th class="r" id="lyeHead">Soude (g)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="oilBody"></tbody>
+          <tfoot id="oilFoot"></tfoot>
+        </table>
+        </div>
+
+        <div class="add-bar">
+          <select id="oilPicker"><option value="">ï¼‹ Ajouter une huile de la listeâ€¦</option></select>
+          <button class="btn ghost" id="addCustom">ï¼‹ Huile personnalisÃ©e</button>
+          <button class="btn ghost" id="loadDemo">Exemple</button>
+        </div>
+        <p class="note" style="margin-top:14px"><span class="badge codex">Codex</span> = valeur issue de la norme officielle Codex Alimentarius CXS&nbsp;210-1999. <span class="badge litt">Litt.</span> = valeur d'olÃ©ochimie / chartes de savonnerie (plus variable). Le coefficient affichÃ© est une valeur moyenne â€” remplace-le par celui de <em>ton</em> lot si tu le connais. Â« VÃ©rifier â†— Â» ouvre la source.</p>
+      </section>
+
+
+      <section class="card">
+        <h2><span class="num">3</span> Additifs de la recette</h2>
+        <div id="additiveRows"></div>
+        <div class="add-bar">
+          <button class="btn ghost" id="addAdditive">ï¼‹ Ajouter un ingrÃ©dient</button>
+        </div>
+        <p class="hint">Parfum, huile essentielle, argile, miel, lait, colorantâ€¦ Ces ingrÃ©dients seront ajoutÃ©s au rÃ©capitulatif et au poids total.</p>
+      </section>
+
+      <details class="calc">
+        <summary>Comment ce coefficient est calculÃ© (facultatif)</summary>
+        <div class="calc-body" id="calcBody"></div>
+      </details>
+    </main>
+
+    <!-- RIGHT : results -->
+    <aside>
+      <section class="card result-card">
+        <h2><span class="num">âœ“</span> Recette calculÃ©e</h2>
+        <div class="big">
+          <div class="k" id="lyeName">Soude (NaOH) Ã  peser</div>
+          <span class="val" id="lyeOut">0</span><span class="unit">g</span>
+        </div>
+        <div class="big">
+          <div class="k">Eau Ã  peser</div>
+          <span class="val" id="waterOut">0</span><span class="unit">g</span>
+        </div>
+        <hr>
+        <div class="kv"><span class="kk">Total huiles</span><span class="vv"><span id="oilsOut">0</span> g</span></div>
+        <div class="kv"><span class="kk">Soude Ã  0 % surgras</span><span class="vv"><span id="lye0Out">0</span> g</span></div>
+        <div class="kv"><span class="kk">Surgras appliquÃ©</span><span class="vv"><span id="sfOut">7</span> %</span></div>
+        <div class="kv"><span class="kk">Concentration lessive</span><span class="vv"><span id="concOut">0</span> %</span></div>
+        <div class="kv"><span class="kk">Ratio eau : soude</span><span class="vv"><span id="ratioOut">0</span></span></div>
+        <hr>
+        <p class="recipe-title">Composition complÃ¨te</p>
+        <div id="recipeList" class="recipe-list"></div>
+        <div class="recipe-total"><span>Poids total recette</span><span><span id="batchOut">0</span> g</span></div>
+        <p style="font-size:12px;color:#c9d5ac;margin:12px 0 0">Le dÃ©tail indique la soude nÃ©cessaire pour chaque huile. Le miel, les huiles essentielles, les argiles et autres additifs sont affichÃ©s mais restent hors calcul de soude.</p>
+      </section>
+    </aside>
+  </div>
+
+  <div class="tools-grid">
+    <section class="card" id="testCard">
+      <h2><span class="num">4</span> Test de la recette</h2>
+      <div class="test-head"><div><p style="margin:0;font-weight:700">Fabriquer une petite partie de la formule</p><p class="hint" style="margin-bottom:0">Les huiles sont rÃ©duites, puis la soude et lâ€™eau sont recalculÃ©es sur le lot test.</p></div><div class="pct-box"><label class="field" for="testPct">Pourcentage du test</label><input type="number" id="testPct" value="20" min="1" max="100" step="1"></div></div>
+      <div class="quick-pcts" id="quickPcts"><button type="button" data-pct="10">10 %</button><button type="button" data-pct="20" class="active">20 %</button><button type="button" data-pct="25">25 %</button><button type="button" data-pct="33">33 %</button><button type="button" data-pct="50">50 %</button></div>
+      <div id="testList" class="test-list"></div><div class="test-total"><span>Poids total du test</span><span><span id="testTotal">0</span> g</span></div>
+    </section>
+    <section class="card" id="fabricationSheet">
+      <div class="no-print" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h2 style="margin-bottom:14px"><span class="num">5</span> Fiche de fabrication</h2><button class="btn primary" type="button" id="printSheet">Imprimer la fiche</button></div>
+      <div class="sheet-fields no-print" style="grid-template-columns:1fr"><div><label class="field" for="recipeName">Nom de la recette</label><input type="text" id="recipeName" placeholder="Ex. Doux bourdonnement de Provence"></div></div>
+      <div class="sheet-box"><p class="sheet-title" id="sheetTitle">Fiche de fabrication</p><div class="sheet-meta" id="sheetMeta"></div><div class="sheet-sub">IngrÃ©dients Ã  peser</div><div id="sheetIngredients"></div><div class="sheet-sub">Ã‰tapes</div><div id="sheetSteps"><div class="check-line"><span class="check">â€¢</span><span>Verser la soude dans lâ€™eau</span><span></span></div><div class="check-line"><span class="check">â€¢</span><span>PrÃ©parer les huiles et beurres</span><span></span></div><div class="check-line"><span class="check">â€¢</span><span>Verser la lessive dans les huiles</span><span></span></div><div class="check-line"><span class="check">â€¢</span><span>Mixer jusquâ€™Ã  la trace lÃ©gÃ¨re</span><span></span></div><div class="check-line"><span class="check">â€¢</span><span>Ajouter les additifs</span><span></span></div><div class="check-line"><span class="check">â€¢</span><span>Couler dans le moule</span><span></span></div></div></div>
+    </section>
+  </div>
+
+  <footer>Calculateur hors-ligne. Aucune donnÃ©e n'est envoyÃ©e. VÃ©rifie toujours avec une seconde source avant de fabriquer.</footer>
+</div>
+
+<script>
+"use strict";
+
+// IS = indice de saponification en mg KOH / g. src: 'codex' | 'litt'. range = fourchette de rÃ©fÃ©rence.
+// url = source vÃ©rifiable pour cet indice.
+const CODEX_URL = "https://www.fao.org/input/download/standards/336/CXS_210e_2015.pdf";
+const CHART_URL = "https://www.ldg.international/saponification-chart/";
+const OILS = [
+  {n:"Huile de coco (coprah)",       sv:256.5, src:"codex", range:"248â€“265", url:CODEX_URL},
+  {n:"Huile de palmiste",            sv:242,   src:"codex", range:"230â€“254", url:CODEX_URL},
+  {n:"Huile de palme",               sv:199.5, src:"codex", range:"190â€“209", url:CODEX_URL},
+  {n:"OlÃ©ine de palme",              sv:198,   src:"codex", range:"194â€“202", url:CODEX_URL},
+  {n:"StÃ©arine de palme",            sv:199,   src:"codex", range:"193â€“205", url:CODEX_URL},
+  {n:"Huile d'olive",                sv:190,   src:"codex", range:"184â€“196", url:CODEX_URL},
+  {n:"Huile de tournesol",           sv:191,   src:"codex", range:"188â€“194", url:CODEX_URL},
+  {n:"Huile de tournesol olÃ©ique",   sv:189,   src:"codex", range:"182â€“194", url:CODEX_URL},
+  {n:"Huile de colza",               sv:187.5, src:"codex", range:"182â€“193", url:CODEX_URL},
+  {n:"Huile de soja",                sv:192,   src:"codex", range:"189â€“195", url:CODEX_URL},
+  {n:"Huile de maÃ¯s",                sv:191,   src:"codex", range:"187â€“195", url:CODEX_URL},
+  {n:"Huile de coton",               sv:193.5, src:"codex", range:"189â€“198", url:CODEX_URL},
+  {n:"Huile de pÃ©pins de raisin",    sv:191,   src:"codex", range:"188â€“194", url:CODEX_URL},
+  {n:"Huile d'arachide",             sv:191.5, src:"codex", range:"187â€“196", url:CODEX_URL},
+  {n:"Huile de sÃ©same",              sv:190.5, src:"codex", range:"186â€“195", url:CODEX_URL},
+  {n:"Huile de carthame",            sv:192,   src:"codex", range:"186â€“198", url:CODEX_URL},
+  {n:"Beurre de karitÃ©",             sv:180,   src:"litt",  range:"178â€“198", url:CHART_URL},
+  {n:"Beurre de cacao",              sv:193,   src:"litt",  range:"188â€“198", url:CHART_URL},
+  {n:"Beurre de mangue",             sv:190,   src:"litt",  range:"185â€“195", url:CHART_URL},
+  {n:"Huile de ricin",               sv:180,   src:"litt",  range:"176â€“187", url:CHART_URL},
+  {n:"Huile d'amande douce",         sv:192,   src:"litt",  range:"185â€“200", url:CHART_URL},
+  {n:"Huile d'avocat",               sv:187,   src:"litt",  range:"177â€“198", url:CHART_URL},
+  {n:"Huile de noyau d'abricot",     sv:191,   src:"litt",  range:"185â€“199", url:CHART_URL},
+  {n:"Huile de chanvre",             sv:190,   src:"litt",  range:"185â€“195", url:CHART_URL},
+  {n:"Huile de son de riz",          sv:187,   src:"litt",  range:"179â€“195", url:CHART_URL},
+  {n:"Huile de babassu",             sv:245,   src:"litt",  range:"240â€“250", url:CHART_URL},
+  {n:"Huile de neem",                sv:195,   src:"litt",  range:"185â€“205", url:CHART_URL},
+  {n:"Saindoux (graisse de porc)",   sv:195,   src:"litt",  range:"190â€“203", url:CHART_URL},
+  {n:"Suif (graisse de bÅ“uf)",       sv:198,   src:"litt",  range:"190â€“200", url:CHART_URL},
+  {n:"Jojoba (cire liquide)",        sv:97,    src:"litt",  range:"85â€“100",  url:CHART_URL},
+  {n:"Cire d'abeille",               sv:95,    src:"litt",  range:"85â€“100",  url:CHART_URL},
+];
+
+const NAOH_MW = 40.0, KOH_MW = 56.1;
+
+// Ã©tat
+let base = "naoh";
+let mode = "g";
+let rows = []; // {name, sv, src, range, amount, custom}
+let additives = []; // {name, amount}
+
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; };
+const fmt = (n, d=1) => (isFinite(n)?n:0).toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function coef(sv){ return base==="naoh" ? (sv/1000)*(NAOH_MW/KOH_MW) : (sv/1000); }
+
+// fourchette de rÃ©fÃ©rence exprimÃ©e en coefficient (pour la soude sÃ©lectionnÃ©e)
+function coefRange(r){
+  if(!r.range) return "â€”";
+  const p=r.range.split("â€“").map(s=>parseFloat(String(s).replace(",",".")));
+  if(p.length===2 && p.every(isFinite)){
+    const a=coef(p[0]).toFixed(4).replace(".",","), b=coef(p[1]).toFixed(4).replace(".",",");
+    return a+"â€“"+b;
+  }
+  return "â€”";
+}
+
+// ---- remplir la liste dÃ©roulante ----
+(function fillPicker(){
+  const sel = $("oilPicker");
+  OILS.forEach((o,i)=>{
+    const opt=document.createElement("option");
+    opt.value=i; opt.textContent=o.n;
+    sel.appendChild(opt);
+  });
+})();
+
+// ---- rendu du tableau ----
+function renderRows(){
+  const body=$("oilBody"); body.innerHTML="";
+  if(rows.length===0){
+    body.innerHTML='<tr class="empty-row"><td colspan="5">Aucune huile. Ajoute-en une ci-dessous ou clique Â« Exemple Â».</td></tr>';
+  }
+  const totalOils = getTotalOils();
+  rows.forEach((r,i)=>{
+    const grams = gramsOf(r,totalOils);
+    const lye = grams*coef(r.sv);
+    const tr=document.createElement("tr");
+
+    // nom
+    const tdName=document.createElement("td");
+    if(r.custom){
+      tdName.innerHTML='<div class="oil-name"><input type="text" value="'+(r.name||"").replace(/"/g,"&quot;")+'" placeholder="Nom de l\'huile"></div>';
+      tdName.querySelector("input").addEventListener("input",e=>{r.name=e.target.value;});
+    }else{
+      const badge = r.src==="codex"
+        ? '<span class="badge codex">Codex</span>'
+        : '<span class="badge litt">Litt.</span>';
+      const linkLabel = r.src==="codex" ? "VÃ©rifier Â· Codex CXS 210" : "VÃ©rifier Â· charte SAP";
+      const link = r.url
+        ? '<a class="verify" href="'+r.url+'" target="_blank" rel="noopener">'+linkLabel+' â†—</a>'
+        : '';
+      tdName.innerHTML='<div class="oil-name">'+r.name+'</div>'+badge+
+        '<span class="ref-range">rÃ©f. '+coefRange(r)+' (coeff.)</span>'+link;
+    }
+    tr.appendChild(tdName);
+
+    // quantitÃ©
+    const tdAmt=document.createElement("td"); tdAmt.className="r amt";
+    const inAmt=document.createElement("input");
+    inAmt.type="number"; inAmt.min="0"; inAmt.step=(mode==="pct"?"0.5":"1");
+    inAmt.value=r.amount;
+    inAmt.addEventListener("input",e=>{r.amount=num(e.target.value);compute();});
+    tdAmt.appendChild(inAmt); tr.appendChild(tdAmt);
+
+    // coefficient de soude (Ã©ditable) â€” le seul chiffre Ã  saisir
+    const tdCoef=document.createElement("td"); tdCoef.className="r sv-cell";
+    const inCoef=document.createElement("input");
+    inCoef.type="number"; inCoef.min="0"; inCoef.step="0.0001";
+    inCoef.value=coef(r.sv).toFixed(4);
+    inCoef.addEventListener("input",e=>{
+      const c=num(e.target.value);
+      // on reconvertit le coefficient saisi en indice de saponification interne
+      r.sv = base==="naoh" ? c*1000*(KOH_MW/NAOH_MW) : c*1000;
+      compute();
+    });
+    tdCoef.appendChild(inCoef); tr.appendChild(tdCoef);
+
+    // soude
+    const tdLye=document.createElement("td"); tdLye.className="r";
+    tdLye.dataset.lyeRow=String(i);
+    tdLye.textContent=fmt(lye,1); tr.appendChild(tdLye);
+
+    // suppr
+    const tdDel=document.createElement("td");
+    const b=document.createElement("button"); b.className="del"; b.title="Retirer"; b.innerHTML="âœ•";
+    b.addEventListener("click",()=>{rows.splice(i,1);renderRows();compute();});
+    tdDel.appendChild(b); tr.appendChild(tdDel);
+
+    body.appendChild(tr);
+  });
+  renderFoot(totalOils);
+}
+
+function renderFoot(totalOils){
+  const foot=$("oilFoot"); foot.innerHTML="";
+  if(rows.length===0) return;
+  const grams = rows.reduce((s,r)=>s+gramsOf(r,totalOils),0);
+  const lye = rows.reduce((s,r)=>s+gramsOf(r,totalOils)*coef(r.sv),0);
+  let amtCell;
+  if(mode==="pct"){
+    const pct=rows.reduce((s,r)=>s+num(r.amount),0);
+    const cls = Math.abs(pct-100)>0.05 ? ' class="warn-pct"' : '';
+    amtCell='<span'+cls+'>'+fmt(pct,1)+' %</span>';
+  }else{
+    amtCell=fmt(grams,0)+' g';
+  }
+  foot.innerHTML='<tr class="totrow"><td>Total</td><td class="r">'+amtCell+
+    '</td><td class="r">â€”</td><td class="r">'+fmt(lye,1)+
+    '</td><td></td></tr>';
+}
+
+// ---- helpers de quantitÃ© ----
+function getTotalOils(){ return mode==="pct" ? num($("totalOils").value) : 0; }
+function gramsOf(r,totalOils){
+  return mode==="pct" ? totalOils*num(r.amount)/100 : num(r.amount);
+}
+
+
+function renderAdditives(){
+  const wrap=$("additiveRows");
+  wrap.innerHTML="";
+  if(additives.length===0){
+    wrap.innerHTML='<p class="hint" style="margin:0">Aucun additif ajoutÃ©.</p>';
+    return;
+  }
+  additives.forEach((a,i)=>{
+    const row=document.createElement("div");
+    row.className="additive-row";
+
+    const name=document.createElement("input");
+    name.type="text";
+    name.placeholder="Ex. huile essentielle de lavandin";
+    name.value=a.name;
+    name.addEventListener("input",e=>{a.name=e.target.value;compute();});
+
+    const amount=document.createElement("input");
+    amount.type="number";
+    amount.min="0";
+    amount.step="0.1";
+    amount.placeholder="Grammes";
+    amount.value=a.amount;
+    amount.addEventListener("input",e=>{a.amount=num(e.target.value);compute();});
+
+    const del=document.createElement("button");
+    del.className="del";
+    del.type="button";
+    del.title="Retirer";
+    del.textContent="âœ•";
+    del.addEventListener("click",()=>{additives.splice(i,1);renderAdditives();compute();});
+
+    row.append(name,amount,del);
+    wrap.appendChild(row);
+  });
+}
+
+function renderRecipe(totalOils,lye,water){
+  const list=$("recipeList");
+  const sf=num($("superfat").value);
+  const lyeLabel=base==="naoh"?"NaOH":"KOH";
+  const parts=[];
+
+  rows.forEach(r=>{
+    const g=gramsOf(r,totalOils);
+    if(g<=0) return;
+    const cf=coef(r.sv);
+    const lyeAtZero=g*cf;
+    const lyeAfterSf=lyeAtZero*(1-sf/100);
+    parts.push(
+      '<div class="recipe-line">'+
+        '<span class="name">'+escapeHtml(r.name||"Huile sans nom")+'</span>'+
+        '<span class="qty">'+fmt(g,1)+' g</span>'+
+        '<span class="calc-note">Soude : '+fmt(g,1)+' Ã— '+cf.toFixed(4).replace(".",",")+' = '+fmt(lyeAtZero,2)+' g Ã  0 % Â· '+fmt(lyeAfterSf,2)+' g aprÃ¨s '+fmt(sf,1)+' % de surgras</span>'+
+      '</div>'
+    );
+  });
+
+  const lye0=rows.reduce((sum,r)=>sum+gramsOf(r,totalOils)*coef(r.sv),0);
+  if(lye>0){
+    const purity=base==="koh"?(num($("purity").value)||100):100;
+    const purityNote=base==="koh" && purity!==100 ? ' Â· correction puretÃ© '+fmt(purity,0)+' % incluse' : '';
+    parts.push(
+      '<div class="recipe-line total-lye">'+
+        '<span class="name">'+(base==="naoh"?"Soude (NaOH) Ã  peser":"Potasse (KOH) Ã  peser")+'</span>'+
+        '<span class="qty">'+fmt(lye,1)+' g</span>'+
+        '<span class="calc-note">Total Ã  0 % : '+fmt(lye0,2)+' g Ã— (1 âˆ’ '+fmt(sf,1)+' %) = '+fmt(lye,2)+' g'+purityNote+'</span>'+
+      '</div>'
+    );
+  }
+
+  if(water>0){
+    parts.push('<div class="recipe-line"><span class="name">Eau</span><span class="qty">'+fmt(water,1)+' g</span><span class="calc-note">Hors calcul de saponification</span></div>');
+  }
+
+  additives.forEach(a=>{
+    const amount=num(a.amount);
+    if(amount<=0) return;
+    parts.push(
+      '<div class="recipe-line">'+
+        '<span class="name">'+escapeHtml(a.name.trim()||"Additif")+' <span class="recipe-tag">hors soude</span></span>'+
+        '<span class="qty">'+fmt(amount,1)+' g</span>'+
+        '<span class="calc-note">AjoutÃ© au poids total, sans modifier la quantitÃ© de '+lyeLabel+'. Une huile ou un beurre Ã  saponifier doit Ãªtre saisi dans la section Â« Huiles & beurres Â».</span>'+
+      '</div>'
+    );
+  });
+
+  list.innerHTML=parts.length
+    ? parts.join("")
+    : '<div class="recipe-line"><span class="name">Aucun ingrÃ©dient</span><span class="qty">â€”</span></div>';
+}
+
+function currentRecipeItems(totalOils,lye,water){
+  const items=[];
+  rows.forEach(r=>{const g=gramsOf(r,totalOils);if(g>0)items.push({name:r.name||"Huile sans nom",amount:g});});
+  if(lye>0)items.push({name:base==="naoh"?"Soude (NaOH)":"Potasse (KOH)",amount:lye});
+  if(water>0)items.push({name:"Eau",amount:water});
+  additives.forEach(a=>{const amount=num(a.amount);if(amount>0)items.push({name:a.name.trim()||"Additif",amount});});
+  return items;
+}
+function renderTest(totalOils,lye,water){
+  const pct=Math.min(100,Math.max(1,num($("testPct").value)||20));
+  const factor=pct/100;
+  const sf=num($("superfat").value);
+
+  // Chaque huile du test est recalculÃ©e sÃ©parÃ©ment, avec sa propre soude.
+  const testOilRows=rows.map(r=>{
+    const original=gramsOf(r,totalOils);
+    const amount=original*factor;
+    const cf=coef(r.sv);
+    const lye0=amount*cf;
+    const lyeAfterSf=lye0*(1-sf/100);
+    return {name:r.name||"Huile sans nom",original,amount,sv:r.sv,cf,lye0,lyeAfterSf};
+  }).filter(r=>r.amount>0);
+
+  const testOils=testOilRows.reduce((sum,r)=>sum+r.amount,0);
+  const testLye0=testOilRows.reduce((sum,r)=>sum+r.lye0,0);
+  const testLyeAfterSf=testOilRows.reduce((sum,r)=>sum+r.lyeAfterSf,0);
+  let testLye=testLyeAfterSf;
+
+  let purity=100;
+  if(base==="koh"){
+    purity=num($("purity").value)||100;
+    testLye=testLyeAfterSf/(purity/100);
+  }
+
+  const method=$("waterMethod").value;
+  const wv=num($("waterValue").value);
+  let testWater=0;
+  let waterCalc="";
+  if(method==="pct"){
+    testWater=testOils*wv/100;
+    waterCalc=fmt(testOils,1)+' g dâ€™huiles et beurres du test Ã— '+fmt(wv,1)+' % = '+fmt(testWater,2)+' g';
+  }else if(method==="conc"){
+    const c=Math.min(Math.max(wv,1),99);
+    testWater=testLye*(100-c)/c;
+    waterCalc=fmt(testLye,2)+' g de '+(base==="naoh"?'soude':'potasse')+' Ã— (100 âˆ’ '+fmt(c,1)+') Ã· '+fmt(c,1)+' = '+fmt(testWater,2)+' g';
+  }else{
+    testWater=testLye*wv;
+    waterCalc=fmt(testLye,2)+' g de '+(base==="naoh"?'soude':'potasse')+' Ã— '+fmt(wv,2)+' = '+fmt(testWater,2)+' g';
+  }
+
+  const parts=[];
+  testOilRows.forEach(r=>{
+    let detail=fmt(r.original,1)+' g Ã— '+fmt(pct,1)+' % = '+fmt(r.amount,2)+' g';
+    detail+='<br>Soude : '+fmt(r.amount,2)+' g Ã— '+r.cf.toFixed(4).replace('.',',')+' = '+fmt(r.lye0,2)+' g Ã  0 %';
+    detail+=' Â· '+fmt(r.lye0,2)+' Ã— (1 âˆ’ '+fmt(sf,1)+' Ã· 100) = '+fmt(r.lyeAfterSf,2)+' g aprÃ¨s surgras';
+    parts.push('<div class="test-line"><span class="tname">'+escapeHtml(r.name)+'</span><span class="tqty">'+fmt(r.amount,1)+' g</span><span class="tcalc">'+detail+'</span></div>');
+  });
+
+  if(testLye>0){
+    const lyeName=base==="naoh"?"Soude (NaOH) Ã  peser":"Potasse (KOH) Ã  peser";
+    const components=testOilRows.map(r=>fmt(r.lye0,2)).join(' + ');
+    let lyeCalc='Soude Ã  0 % : '+components+' = '+fmt(testLye0,2)+' g';
+    lyeCalc+='<br>AprÃ¨s surgras : '+fmt(testLye0,2)+' Ã— (1 âˆ’ '+fmt(sf,1)+' Ã· 100) = '+fmt(testLyeAfterSf,2)+' g';
+    if(base==="koh" && purity!==100) lyeCalc+='<br>PuretÃ© '+fmt(purity,0)+' % : '+fmt(testLyeAfterSf,2)+' Ã· '+fmt(purity/100,2)+' = '+fmt(testLye,2)+' g';
+    parts.push('<div class="test-line"><span class="tname">'+lyeName+'</span><span class="tqty">'+fmt(testLye,1)+' g</span><span class="tcalc">'+lyeCalc+'</span></div>');
+  }
+
+  if(testWater>0){
+    parts.push('<div class="test-line"><span class="tname">Eau</span><span class="tqty">'+fmt(testWater,1)+' g</span><span class="tcalc">'+waterCalc+'</span></div>');
+  }
+
+  additives.forEach(a=>{
+    const original=num(a.amount);
+    const reduced=original*factor;
+    if(reduced>0){
+      parts.push('<div class="test-line"><span class="tname">'+escapeHtml(a.name.trim()||"Additif")+'</span><span class="tqty">'+fmt(reduced,1)+' g</span><span class="tcalc">'+fmt(original,1)+' g Ã— '+fmt(pct,1)+' % = '+fmt(reduced,2)+' g</span></div>');
+    }
+  });
+
+  $("testList").innerHTML=parts.join("")||'<p class="hint">Ajoute des ingrÃ©dients pour calculer un test.</p>';
+  const additivesTest=additives.reduce((sum,a)=>sum+num(a.amount)*factor,0);
+  $("testTotal").textContent=fmt(testOils+testLye+testWater+additivesTest,1);
+  document.querySelectorAll("#quickPcts button").forEach(b=>b.classList.toggle("active",num(b.dataset.pct)===pct));
+}
+function renderSheet(totalOils,lye,water){
+  const items=currentRecipeItems(totalOils,lye,water),name=$("recipeName").value.trim(),method=$("waterMethod").value;
+  const today=new Date().toLocaleDateString("fr-FR");
+  $("sheetTitle").textContent=name||"Fiche de fabrication";
+  const methodText=method==="pct"?fmt(num($("waterValue").value),1)+" % des huiles":method==="conc"?"lessive Ã  "+fmt(num($("waterValue").value),1)+" %":"ratio eau : soude "+fmt(num($("waterValue").value),2)+" : 1";
+  $("sheetMeta").textContent="Date : "+today+" Â· Surgras : "+fmt(num($("superfat").value),1)+" % Â· Eau : "+methodText;
+  $("sheetIngredients").innerHTML=items.map(item=>'<div class="check-line"><span class="check">â€¢</span><span>'+escapeHtml(item.name)+'</span><span class="q">'+fmt(item.amount,1)+' g</span></div>').join("")||'<p class="hint">Aucun ingrÃ©dient.</p>';
+}
+
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+
+// ---- calcul principal ----
+function compute(){
+  const totalOils = getTotalOils();
+  const grams = rows.reduce((s,r)=>s+gramsOf(r,totalOils),0);
+  const lye0  = rows.reduce((s,r)=>s+gramsOf(r,totalOils)*coef(r.sv),0);
+
+  const sf = num($("superfat").value);
+  let lye = lye0*(1 - sf/100);
+
+  // puretÃ© KOH
+  let purity=100;
+  if(base==="koh"){ purity=num($("purity").value)||100; lye = lye/(purity/100); }
+
+  // eau
+  const method=$("waterMethod").value;
+  const wv=num($("waterValue").value);
+  let water=0;
+  if(method==="pct")   water = grams*wv/100;
+  else if(method==="conc"){ const c=Math.min(Math.max(wv,1),99); water = lye*(100-c)/c; }
+  else if(method==="ratio") water = lye*wv;
+
+  const conc = (lye+water)>0 ? lye/(lye+water)*100 : 0;
+  const ratio = lye>0 ? water/lye : 0;
+  const additivesTotal = additives.reduce((sum,a)=>sum+num(a.amount),0);
+  const batch = grams+lye+water+additivesTotal;
+
+  $("lyeName").textContent = base==="naoh" ? "Soude (NaOH) Ã  peser" : "Potasse (KOH) Ã  peser";
+  $("lyeOut").textContent  = fmt(lye,1);
+  $("waterOut").textContent= fmt(water,0);
+  $("oilsOut").textContent = fmt(grams,0);
+  $("lye0Out").textContent = fmt(lye0,1);
+  $("sfOut").textContent   = fmt(sf,1);
+  $("concOut").textContent = fmt(conc,1);
+  $("ratioOut").textContent= fmt(ratio,2);
+  $("batchOut").textContent= fmt(batch,1);
+  renderRecipe(totalOils,lye,water);
+  renderTest(totalOils,lye,water);
+  renderSheet(totalOils,lye,water);
+
+  // Met Ã  jour immÃ©diatement la quantitÃ© de soude de chaque ligne
+  // sans reconstruire le tableau (et donc sans faire perdre le focus pendant la saisie).
+  document.querySelectorAll("[data-lye-row]").forEach(cell=>{
+    const i=Number(cell.dataset.lyeRow);
+    const r=rows[i];
+    if(!r) return;
+    cell.textContent=fmt(gramsOf(r,totalOils)*coef(r.sv),1);
+  });
+
+  renderFoot(totalOils);
+  renderCalc({grams,lye0,sf,purity,method,wv,water,lye,conc});
+}
+
+function renderCalc(x){
+  const lyeWord = base==="naoh" ? "soude (NaOH)" : "potasse (KOH)";
+  const coefName = base==="naoh" ? "Coeff. NaOH" : "Coeff. KOH";
+  if(rows.length===0){
+    $("calcBody").innerHTML='<p class="calc-intro">Ajoute au moins une huile pour voir le calcul dÃ©taillÃ©.</p>';
+    return;
+  }
+
+  // numÃ©rotation des Ã©tapes
+  let n=0; const N=()=>++n;
+  const step=(title,eq,res)=>
+    '<div class="step"><div class="sn">'+N()+'</div><div class="sc">'+
+    '<div class="st-t">'+title+'</div>'+
+    (eq?'<div class="st-eq">'+eq+'</div>':'')+
+    (res?'<div class="st-res">â†’ '+res+'</div>':'')+'</div></div>';
+
+  // Ã‰tape 1 : coefficient
+  const coefEq = base==="naoh"
+    ? 'coeff. = IS Ã· 1000 Ã— (40,0 Ã· 56,1)   (masses molaires NaOH Ã· KOH)'
+    : 'coeff. = IS Ã· 1000';
+  let html = '<p class="calc-intro">Chaque Ã©tape reprend <b>tes chiffres actuels</b>. IS = indice de saponification (mg KOH/g), modifiable sur chaque ligne du tableau.</p>';
+  html += step(
+    'On transforme chaque indice de saponification en coefficient de '+lyeWord,
+    coefEq,
+    'exemple : IS '+fmt(rows[0].sv,1)+' â†’ coeff. '+coef(rows[0].sv).toFixed(4)
+  );
+
+  // Ã‰tape 2 : soude par huile (tableau liÃ©)
+  const totalOils=getTotalOils();
+  let tbl='<table class="calc-table"><thead><tr><th>Huile</th><th>Poids (g)</th><th>IS</th><th>'+coefName+'</th><th>'+lyeWord.split(" ")[0]+' (g)</th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    const g=gramsOf(r,totalOils); const cf=coef(r.sv);
+    tbl+='<tr><td>'+(r.name||'(sans nom)')+'</td><td>'+fmt(g,1)+'</td><td>'+fmt(r.sv,1)+'</td><td>'+cf.toFixed(4)+'</td><td>'+fmt(g*cf,2)+'</td></tr>';
+  });
+  tbl+='</tbody><tfoot><tr><td>Total</td><td>'+fmt(x.grams,1)+'</td><td>â€”</td><td>â€”</td><td>'+fmt(x.lye0,2)+'</td></tr></tfoot></table>';
+  html += '<div class="step"><div class="sn">'+N()+'</div><div class="sc">'+
+    '<div class="st-t">'+lyeWord.charAt(0).toUpperCase()+lyeWord.slice(1)+' pour chaque huile = poids Ã— coefficient</div>'+
+    tbl+'</div></div>';
+
+  // Ã‰tape 3 : total Ã  0 % surgras
+  html += step(
+    lyeWord.charAt(0).toUpperCase()+lyeWord.slice(1)+' totale, sans surgras (0 %)',
+    'on additionne la derniÃ¨re colonne',
+    fmt(x.lye0,2)+' g'
+  );
+
+  // Ã‰tape 4 : surgras
+  html += step(
+    'On applique le surgras ('+fmt(x.sf,1)+' %) : on retire ce % de '+lyeWord,
+    fmt(x.lye0,2)+' Ã— (1 âˆ’ '+fmt(x.sf,1)+' Ã· 100)',
+    fmt(x.lye0*(1-x.sf/100),2)+' g'
+  );
+
+  // Ã‰tape 5 (KOH) : puretÃ©
+  if(base==="koh"){
+    html += step(
+      'La potasse du commerce n\'est pure qu\'Ã  '+fmt(x.purity,0)+' % : on divise pour compenser',
+      fmt(x.lye0*(1-x.sf/100),2)+' Ã· '+fmt(x.purity/100,2),
+      fmt(x.lye,2)+' g de potasse Ã  peser'
+    );
+  }
+
+  // Ã‰tape eau
+  let waterEq,waterTitle;
+  if(x.method==="pct"){ waterTitle='Eau : '+fmt(x.wv,1)+' % du poids des huiles'; waterEq=fmt(x.grams,1)+' Ã— '+fmt(x.wv,1)+' Ã· 100'; }
+  else if(x.method==="conc"){ waterTitle='Eau, pour une lessive Ã  '+fmt(x.wv,1)+' %'; waterEq='eau = '+lyeWord.split(" ")[0]+' Ã— (100 âˆ’ '+fmt(x.wv,1)+') Ã· '+fmt(x.wv,1); }
+  else { waterTitle='Eau : ratio '+fmt(x.wv,2)+' : 1'; waterEq='eau = '+lyeWord.split(" ")[0]+' Ã— '+fmt(x.wv,2); }
+  html += step(waterTitle, waterEq, fmt(x.water,1)+' g d\'eau');
+
+  // Concentration
+  html += step(
+    'Concentration finale de la lessive',
+    lyeWord.split(" ")[0]+' Ã· ('+lyeWord.split(" ")[0]+' + eau) = '+fmt(x.lye,2)+' Ã· ('+fmt(x.lye,2)+' + '+fmt(x.water,1)+')',
+    fmt(x.conc,1)+' %'
+  );
+
+  // Total pÃ¢te
+  html += step(
+    'Poids total de la pÃ¢te (hors additifs)',
+    'huiles + '+lyeWord.split(" ")[0]+' + eau = '+fmt(x.grams,1)+' + '+fmt(x.lye,2)+' + '+fmt(x.water,1),
+    fmt(x.grams+x.lye+x.water,1)+' g'
+  );
+
+  $("calcBody").innerHTML = html;
+}
+
+// ---- ajout / modes ----
+function addOil(i){
+  const o=OILS[i];
+  rows.push({name:o.n,sv:o.sv,src:o.src,range:o.range,url:o.url,amount:(mode==="pct"?0:100),custom:false});
+  renderRows();compute();
+}
+$("oilPicker").addEventListener("change",e=>{
+  if(e.target.value!==""){ addOil(parseInt(e.target.value,10)); e.target.value=""; }
+});
+$("addCustom").addEventListener("click",()=>{
+  rows.push({name:"",sv:190,src:"litt",range:"Ã  saisir",amount:(mode==="pct"?0:100),custom:true});
+  renderRows();compute();
+});
+$("loadDemo").addEventListener("click",()=>{
+  const pick=(name,amt)=>{const o=OILS.find(x=>x.n===name);return {name:o.n,sv:o.sv,src:o.src,range:o.range,url:o.url,amount:amt,custom:false};};
+  if(mode==="pct"){
+    rows=[pick("Huile d'olive",50),pick("Huile de coco (coprah)",25),pick("Huile de palme",20),pick("Huile de ricin",5)];
+    $("totalOils").value=1000;
+  }else{
+    rows=[pick("Huile d'olive",500),pick("Huile de coco (coprah)",250),pick("Huile de palme",200),pick("Huile de ricin",50)];
+  }
+  renderRows();compute();
+});
+
+// base NaOH/KOH
+$("baseSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  base=b.dataset.base;
+  [...$("baseSeg").children].forEach(x=>x.setAttribute("aria-pressed",x===b));
+  $("purityWrap").style.display = base==="koh" ? "block":"none";
+  $("coefHead").textContent = base==="naoh" ? "Coeff. NaOH":"Coeff. KOH";
+  $("lyeHead").textContent  = base==="naoh" ? "NaOH (g)":"KOH (g)";
+  renderRows();compute();
+});
+
+// mode g / %
+$("modeSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  const newMode=b.dataset.mode; if(newMode===mode)return;
+  const totalOils=getTotalOils();
+  // convertir les valeurs pour rester cohÃ©rent
+  if(newMode==="pct"){
+    const g = rows.reduce((s,r)=>s+num(r.amount),0);
+    if(g>0){ $("totalOils").value=Math.round(g); rows.forEach(r=>r.amount=+(num(r.amount)/g*100).toFixed(2)); }
+  }else{
+    rows.forEach(r=>r.amount=+(totalOils*num(r.amount)/100).toFixed(1));
+  }
+  mode=newMode;
+  [...$("modeSeg").children].forEach(x=>x.setAttribute("aria-pressed",x===b));
+  $("totalOilsWrap").style.display = mode==="pct" ? "block":"none";
+  $("amtHead").textContent = mode==="pct" ? "Part (%)":"Poids (g)";
+  renderRows();compute();
+});
+
+// eau : libellÃ©s dynamiques
+$("waterMethod").addEventListener("change",()=>{
+  const m=$("waterMethod").value;
+  if(m==="pct"){ $("waterLabel").textContent="Eau (% des huiles)"; $("waterValue").value=33; $("waterHint").textContent="Souvent 30â€“38 % du poids des huiles."; }
+  else if(m==="conc"){ $("waterLabel").textContent="Concentration de la lessive (%)"; $("waterValue").value=33; $("waterHint").textContent="33 % = Â« full water Â». 40 % = lessive plus concentrÃ©e (trace plus rapide)."; }
+  else { $("waterLabel").textContent="Ratio eau : soude"; $("waterValue").value=2.3; $("waterHint").textContent="Ex. 2,3 : 1. Ratio plus bas = lessive plus concentrÃ©e."; }
+  compute();
+});
+
+["superfat","purity","waterValue","totalOils"].forEach(id=>$(id).addEventListener("input",compute));
+
+$("addAdditive").addEventListener("click",()=>{
+  additives.push({name:"",amount:0});
+  renderAdditives();
+  const inputs=$("additiveRows").querySelectorAll('input[type="text"]');
+  if(inputs.length) inputs[inputs.length-1].focus();
+});
+
+$("testPct").addEventListener("input",compute);
+$("quickPcts").addEventListener("click",e=>{const b=e.target.closest("button[data-pct]");if(!b)return;$("testPct").value=b.dataset.pct;compute();});
+$("recipeName").addEventListener("input",compute);
+$("printSheet").addEventListener("click",()=>window.print());
+
+// dÃ©marrage
+renderAdditives();
+$("loadDemo").click();
+</script>
+</body>
+</html>
