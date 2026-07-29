@@ -10,5 +10,6 @@ deployment:
     - /bin/cp -f oauth.php "$DEPLOYPATH/oauth.php"
     - /bin/cp -f .htaccess "$DEPLOYPATH/.htaccess"
     - /bin/cp -f calculateur/index.html "$DEPLOYPATH/calculateur/index.html"
+    - /bin/cp -f calculateur/recipes-api.php "$DEPLOYPATH/calculateur/recipes-api.php"
     - /bin/cp -f labo-deo/index.html "$DEPLOYPATH/labo-deo/index.html"
     - /bin/cp -f labo-deo/api.php "$DEPLOYPATH/labo-deo/api.php"
