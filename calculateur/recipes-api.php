@@ -76,9 +76,22 @@ if ($action === 'save') {
     if ($clean === false) {
         respond(['ok' => false, 'error' => 'Impossible d’enregistrer la recette.'], 422);
     }
+    $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT);
+    if ($id) {
+        $stmt = $pdo->prepare('UPDATE savon_recipes SET name = ?, data_json = ? WHERE id = ?');
+        $stmt->execute([$name, $clean, $id]);
+        if ($stmt->rowCount() === 0) {
+            $check = $pdo->prepare('SELECT id FROM savon_recipes WHERE id = ?');
+            $check->execute([$id]);
+            if (!$check->fetch()) {
+                respond(['ok' => false, 'error' => 'Cette formulation n’existe plus.'], 404);
+            }
+        }
+        respond(['ok' => true, 'id' => (int)$id, 'updated' => true]);
+    }
     $stmt = $pdo->prepare('INSERT INTO savon_recipes (name, data_json) VALUES (?, ?)');
     $stmt->execute([$name, $clean]);
-    respond(['ok' => true, 'id' => (int)$pdo->lastInsertId()]);
+    respond(['ok' => true, 'id' => (int)$pdo->lastInsertId(), 'updated' => false]);
 }
 
 if ($action === 'delete') {
