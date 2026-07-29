@@ -302,6 +302,27 @@
     .additive-row{grid-template-columns:minmax(0,1fr) 82px 40px}
   }
 
+
+  .saved-recipes{margin-top:22px}
+  .saved-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap}
+  .saved-form{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:10px;align-items:end;flex:1;max-width:640px}
+  .saved-status{font-size:13px;color:var(--ink-soft);margin:10px 0 0}
+  .saved-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:16px}
+  .saved-item{border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px;display:grid;gap:10px}
+  .saved-item-name{font-weight:800;overflow-wrap:anywhere}
+  .saved-item-meta{font-size:12px;color:var(--ink-soft)}
+  .saved-item-actions{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .saved-item .delete-recipe{width:44px;color:var(--danger)}
+  @media(max-width:700px){
+    .saved-recipes{margin-top:14px}
+    .saved-head{display:block}
+    .saved-form{display:block;max-width:none}
+    .saved-form .btn{margin-top:9px}
+    .saved-list{grid-template-columns:1fr}
+    .saved-item-actions .btn{width:100%}
+    .saved-item .delete-recipe{width:48px}
+  }
+
 </style>
 </head>
 <body>
@@ -454,7 +475,26 @@
     </section>
   </div>
 
-  <footer>Calculateur hors-ligne. Aucune donnée n'est envoyée. Vérifie toujours avec une seconde source avant de fabriquer.</footer>
+
+  <section class="card saved-recipes" id="savedRecipesCard">
+    <div class="saved-head">
+      <div>
+        <h2><span class="num">6</span> Mes recettes enregistrées</h2>
+        <p class="hint" style="margin:0">Enregistre la recette affichée, puis recharge-la sur ton téléphone ou ton ordinateur.</p>
+      </div>
+      <div class="saved-form">
+        <div>
+          <label class="field" for="savedRecipeName">Nom de la recette</label>
+          <input type="text" id="savedRecipeName" maxlength="190" placeholder="Ex. Savon olive et karité">
+        </div>
+        <button class="btn primary" type="button" id="saveRecipe">Enregistrer cette recette</button>
+      </div>
+    </div>
+    <p class="saved-status" id="savedRecipesStatus">Connexion au stockage…</p>
+    <div class="saved-list" id="savedRecipesList"></div>
+  </section>
+
+  <footer>Les recettes enregistrées sont synchronisées dans ton espace cPanel. Vérifie toujours avec une seconde source avant de fabriquer.</footer>
 </div>
 
 <script>
@@ -1029,9 +1069,116 @@ $("quickPcts").addEventListener("click",e=>{const b=e.target.closest("button[dat
 $("recipeName").addEventListener("input",compute);
 $("printSheet").addEventListener("click",()=>window.print());
 
+// stockage des recettes
+
+function recipeApi(action, payload) {
+  const body = new URLSearchParams();
+  Object.keys(payload||{}).forEach(key=>body.append(key,payload[key]));
+  return fetch('recipes-api.php?action='+encodeURIComponent(action),{
+    method:'POST',credentials:'same-origin',
+    headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+    body:body.toString()
+  }).then(r=>r.json().catch(()=>({ok:false,error:'Réponse serveur invalide.'})));
+}
+function ensureRecipeAuth() {
+  return recipeApi('me').then(status=>{
+    if(status.auth) return true;
+    const password=window.prompt('Mot de passe du Mailer pour accéder à tes recettes :');
+    if(!password) throw new Error('Connexion annulée');
+    return recipeApi('login',{password}).then(result=>{
+      if(!result.ok) throw new Error(result.error||'Connexion impossible');
+      return true;
+    });
+  });
+}
+function currentRecipeState() {
+  return {
+    version:1,base,mode,
+    rows:JSON.parse(JSON.stringify(rows)),
+    additives:JSON.parse(JSON.stringify(additives)),
+    superfat:num($('superfat').value),
+    purity:num($('purity').value),
+    waterMethod:$('waterMethod').value,
+    waterValue:num($('waterValue').value),
+    totalOils:num($('totalOils').value),
+    recipeName:$('recipeName').value||''
+  };
+}
+function applyRecipeState(data,name) {
+  if(!data||!Array.isArray(data.rows)) return;
+  base=data.base==='koh'?'koh':'naoh';
+  mode=data.mode==='pct'?'pct':'g';
+  rows=JSON.parse(JSON.stringify(data.rows));
+  additives=Array.isArray(data.additives)?JSON.parse(JSON.stringify(data.additives)):[];
+  $('superfat').value=data.superfat==null?7:data.superfat;
+  $('purity').value=data.purity==null?90:data.purity;
+  $('waterMethod').value=data.waterMethod||'pct';
+  $('waterValue').value=data.waterValue==null?33:data.waterValue;
+  $('totalOils').value=data.totalOils||1000;
+  $('recipeName').value=data.recipeName||name||'';
+  $('savedRecipeName').value=name||data.recipeName||'';
+  [...$('baseSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.base===base));
+  [...$('modeSeg').children].forEach(x=>x.setAttribute('aria-pressed',x.dataset.mode===mode));
+  $('purityWrap').style.display=base==='koh'?'block':'none';
+  $('totalOilsWrap').style.display=mode==='pct'?'block':'none';
+  $('coefHead').textContent=base==='naoh'?'Coeff. NaOH':'Coeff. KOH';
+  $('lyeHead').textContent=base==='naoh'?'NaOH (g)':'KOH (g)';
+  $('amtHead').textContent=mode==='pct'?'Part (%)':'Poids (g)';
+  renderRows();renderAdditives();compute();
+  $('savedRecipesCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderSavedRecipes(recipes) {
+  const list=$('savedRecipesList'); list.innerHTML='';
+  if(!recipes.length){
+    $('savedRecipesStatus').textContent='Aucune recette enregistrée pour le moment.';
+    return;
+  }
+  $('savedRecipesStatus').textContent=recipes.length+' recette'+(recipes.length>1?'s':'')+' enregistrée'+(recipes.length>1?'s':'')+'.';
+  recipes.forEach(recipe=>{
+    const item=document.createElement('article'); item.className='saved-item';
+    const title=document.createElement('div'); title.className='saved-item-name'; title.textContent=recipe.name;
+    const meta=document.createElement('div'); meta.className='saved-item-meta';
+    const count=Array.isArray(recipe.data.rows)?recipe.data.rows.length:0;
+    meta.textContent=count+' huile'+(count>1?'s':'')+' · '+(recipe.data.base==='koh'?'KOH':'NaOH')+' · surgras '+(recipe.data.superfat||0)+' %';
+    const actions=document.createElement('div'); actions.className='saved-item-actions';
+    const load=document.createElement('button'); load.type='button'; load.className='btn primary'; load.textContent='Charger';
+    load.addEventListener('click',()=>applyRecipeState(recipe.data,recipe.name));
+    const del=document.createElement('button'); del.type='button'; del.className='btn ghost delete-recipe'; del.title='Supprimer'; del.setAttribute('aria-label','Supprimer '+recipe.name); del.textContent='✕';
+    del.addEventListener('click',()=>{
+      if(!window.confirm('Supprimer la recette « '+recipe.name+' » ?')) return;
+      recipeApi('delete',{id:recipe.id}).then(result=>{
+        if(!result.ok) throw new Error(result.error||'Suppression impossible');
+        loadSavedRecipes();
+      }).catch(error=>$('savedRecipesStatus').textContent=error.message);
+    });
+    actions.append(load,del); item.append(title,meta,actions); list.appendChild(item);
+  });
+}
+function loadSavedRecipes() {
+  $('savedRecipesStatus').textContent='Chargement des recettes…';
+  return ensureRecipeAuth().then(()=>recipeApi('list')).then(result=>{
+    if(!result.ok) throw new Error(result.error||'Chargement impossible');
+    renderSavedRecipes(result.recipes||[]);
+  }).catch(error=>{
+    $('savedRecipesStatus').textContent='Recettes non synchronisées : '+error.message;
+  });
+}
+$('saveRecipe').addEventListener('click',()=>{
+  const name=$('savedRecipeName').value.trim()||$('recipeName').value.trim();
+  if(!name){ $('savedRecipeName').focus(); $('savedRecipesStatus').textContent='Donne un nom à la recette avant de l’enregistrer.'; return; }
+  $('savedRecipeName').value=name; $('recipeName').value=name; compute();
+  $('saveRecipe').disabled=true; $('savedRecipesStatus').textContent='Enregistrement…';
+  ensureRecipeAuth().then(()=>recipeApi('save',{name,data:JSON.stringify(currentRecipeState())})).then(result=>{
+    if(!result.ok) throw new Error(result.error||'Enregistrement impossible');
+    return loadSavedRecipes();
+  }).catch(error=>$('savedRecipesStatus').textContent=error.message)
+    .finally(()=>$('saveRecipe').disabled=false);
+});
+
 // démarrage
 renderAdditives();
 $("loadDemo").click();
+loadSavedRecipes();
 </script>
 </body>
 </html>
