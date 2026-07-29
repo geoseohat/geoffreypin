@@ -49,6 +49,7 @@
   <div class="eyebrow">Lumen Juris</div>
   <h1>Mailer</h1>
   <p class="sub">Campagnes email, base de contacts categorisee, envoi etale et historique â€” tout stocke sur ton hebergement.</p>
+  <p class="badge" style="display:inline-block;margin:0 0 18px">Mise &agrave; jour GitHub &middot; 29 juillet 2026</p>
 
   <!-- LOGIN -->
   <div id="loginCard" class="card hidden">
