@@ -1,10 +1,12 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/dxjnl098/public_html/mailer
-    - /bin/mkdir -p "$DEPLOYPATH"
+    - export DEPLOYPATH=/home/dxin1098/public_html/mailer
+    - /bin/mkdir -p "$DEPLOYPATH/calculateur"
     - /bin/cp -f index.php "$DEPLOYPATH/index.php"
+    - /bin/cp -f mailer.php "$DEPLOYPATH/mailer.php"
     - /bin/cp -f api.php "$DEPLOYPATH/api.php"
     - /bin/cp -f install.php "$DEPLOYPATH/install.php"
     - /bin/cp -f oauth.php "$DEPLOYPATH/oauth.php"
     - /bin/cp -f .htaccess "$DEPLOYPATH/.htaccess"
+    - /bin/cp -f calculateur/index.html "$DEPLOYPATH/calculateur/index.html"
