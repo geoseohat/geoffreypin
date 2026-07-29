@@ -468,31 +468,29 @@
       <div class="quick-pcts" id="quickPcts"><button type="button" data-pct="10">10 %</button><button type="button" data-pct="20" class="active">20 %</button><button type="button" data-pct="25">25 %</button><button type="button" data-pct="33">33 %</button><button type="button" data-pct="50">50 %</button></div>
       <div id="testList" class="test-list"></div><div class="test-total"><span>Poids total du test</span><span><span id="testTotal">0</span> g</span></div>
     </section>
-    <section class="card" id="fabricationSheet">
-      <div class="no-print" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h2 style="margin-bottom:14px"><span class="num">5</span> Fiche de fabrication</h2><button class="btn primary" type="button" id="printSheet">Imprimer la fiche</button></div>
-      <div class="sheet-fields no-print" style="grid-template-columns:1fr"><div><label class="field" for="recipeName">Nom de la recette</label><input type="text" id="recipeName" placeholder="Ex. Doux bourdonnement de Provence"></div></div>
-      <div class="sheet-box"><p class="sheet-title" id="sheetTitle">Fiche de fabrication</p><div class="sheet-meta" id="sheetMeta"></div><div class="sheet-sub">Ingrédients à peser</div><div id="sheetIngredients"></div><div class="sheet-sub">Étapes</div><div id="sheetSteps"><div class="check-line"><span class="check">•</span><span>Verser la soude dans l’eau</span><span></span></div><div class="check-line"><span class="check">•</span><span>Préparer les huiles et beurres</span><span></span></div><div class="check-line"><span class="check">•</span><span>Verser la lessive dans les huiles</span><span></span></div><div class="check-line"><span class="check">•</span><span>Mixer jusqu’à la trace légère</span><span></span></div><div class="check-line"><span class="check">•</span><span>Ajouter les additifs</span><span></span></div><div class="check-line"><span class="check">•</span><span>Couler dans le moule</span><span></span></div></div></div>
+    <section class="card saved-recipes" id="savedRecipesCard">
+      <div class="saved-head">
+        <div>
+          <h2><span class="num">5</span> Bibliothèque de formulations</h2>
+          <p class="hint" style="margin:0">Enregistre la formule affichée ou recharge une ancienne formulation pour la modifier dans la calculette.</p>
+        </div>
+      </div>
+      <div class="saved-form" style="margin-top:14px">
+        <div>
+          <label class="field" for="savedRecipeName">Nom de la formulation</label>
+          <input type="text" id="savedRecipeName" maxlength="190" placeholder="Ex. Savon olive et karité">
+        </div>
+        <button class="btn primary" type="button" id="saveRecipe">Ajouter à la bibliothèque</button>
+      </div>
+      <p class="saved-status" id="savedRecipesStatus">Connexion au stockage…</p>
+      <div class="saved-list" id="savedRecipesList"></div>
+      <div hidden aria-hidden="true">
+        <input type="text" id="recipeName">
+        <div id="fabricationSheet"><p id="sheetTitle"></p><div id="sheetMeta"></div><div id="sheetIngredients"></div></div>
+      </div>
     </section>
   </div>
 
-
-  <section class="card saved-recipes" id="savedRecipesCard">
-    <div class="saved-head">
-      <div>
-        <h2><span class="num">6</span> Mes recettes enregistrées</h2>
-        <p class="hint" style="margin:0">Enregistre la recette affichée, puis recharge-la sur ton téléphone ou ton ordinateur.</p>
-      </div>
-      <div class="saved-form">
-        <div>
-          <label class="field" for="savedRecipeName">Nom de la recette</label>
-          <input type="text" id="savedRecipeName" maxlength="190" placeholder="Ex. Savon olive et karité">
-        </div>
-        <button class="btn primary" type="button" id="saveRecipe">Enregistrer cette recette</button>
-      </div>
-    </div>
-    <p class="saved-status" id="savedRecipesStatus">Connexion au stockage…</p>
-    <div class="saved-list" id="savedRecipesList"></div>
-  </section>
 
   <footer>Les recettes enregistrées sont synchronisées dans ton espace cPanel. Vérifie toujours avec une seconde source avant de fabriquer.</footer>
 </div>
@@ -1067,7 +1065,6 @@ $("addAdditive").addEventListener("click",()=>{
 $("testPct").addEventListener("input",compute);
 $("quickPcts").addEventListener("click",e=>{const b=e.target.closest("button[data-pct]");if(!b)return;$("testPct").value=b.dataset.pct;compute();});
 $("recipeName").addEventListener("input",compute);
-$("printSheet").addEventListener("click",()=>window.print());
 
 // stockage des recettes
 
@@ -1125,7 +1122,7 @@ function applyRecipeState(data,name) {
   $('lyeHead').textContent=base==='naoh'?'NaOH (g)':'KOH (g)';
   $('amtHead').textContent=mode==='pct'?'Part (%)':'Poids (g)';
   renderRows();renderAdditives();compute();
-  $('savedRecipesCard').scrollIntoView({behavior:'smooth',block:'start'});
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 function renderSavedRecipes(recipes) {
   const list=$('savedRecipesList'); list.innerHTML='';
@@ -1141,7 +1138,7 @@ function renderSavedRecipes(recipes) {
     const count=Array.isArray(recipe.data.rows)?recipe.data.rows.length:0;
     meta.textContent=count+' huile'+(count>1?'s':'')+' · '+(recipe.data.base==='koh'?'KOH':'NaOH')+' · surgras '+(recipe.data.superfat||0)+' %';
     const actions=document.createElement('div'); actions.className='saved-item-actions';
-    const load=document.createElement('button'); load.type='button'; load.className='btn primary'; load.textContent='Charger';
+    const load=document.createElement('button'); load.type='button'; load.className='btn primary'; load.textContent='Modifier dans la calculette';
     load.addEventListener('click',()=>applyRecipeState(recipe.data,recipe.name));
     const del=document.createElement('button'); del.type='button'; del.className='btn ghost delete-recipe'; del.title='Supprimer'; del.setAttribute('aria-label','Supprimer '+recipe.name); del.textContent='✕';
     del.addEventListener('click',()=>{
