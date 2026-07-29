@@ -11,3 +11,4 @@ deployment:
     - /bin/cp -f .htaccess "$DEPLOYPATH/.htaccess"
     - /bin/cp -f calculateur/index.html "$DEPLOYPATH/calculateur/index.html"
     - /bin/cp -f labo-deo/index.html "$DEPLOYPATH/labo-deo/index.html"
+    - /bin/cp -f labo-deo/api.php "$DEPLOYPATH/labo-deo/api.php"
